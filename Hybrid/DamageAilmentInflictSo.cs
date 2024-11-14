@@ -1,9 +1,9 @@
-﻿using System;
+﻿#if DAMAGE_MODULE
+using System;
 using System.Collections.Generic;
 using Core.Hybrid;
 using GameReady.Ailments.Runtime;
 using Src.PackageCandidate.GameReady.Ailments.Runtime;
-using Src.PackageCandidate.Sufferenger.Authoring;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
@@ -40,3 +40,4 @@ namespace Src.PackageCandidate.GameReady.Ailments.Hybrid
         }
     }
 }
+#endif

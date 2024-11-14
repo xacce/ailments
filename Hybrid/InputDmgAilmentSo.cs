@@ -1,14 +1,10 @@
-﻿using System;
+﻿#if DAMAGE_MODULE
+using System;
 using GameReady.Ailments.Runtime;
-using NUnit.Compatibility;
-using NUnit.Framework.Interfaces;
 using Src.PackageCandidate.Attributer;
-using Src.PackageCandidate.Sufferenger.Authoring;
-using Sufferenger;
 using Trove.PolymorphicStructs;
 using Unity.Entities;
 using Unity.Mathematics;
-using UnityEditor;
 using UnityEngine;
 
 namespace Src.PackageCandidate.GameReady.Ailments.Hybrid
@@ -89,3 +85,4 @@ namespace Src.PackageCandidate.GameReady.Ailments.Hybrid
         public override int id => node.constructor.stackGroupId;
     }
 }
+#endif

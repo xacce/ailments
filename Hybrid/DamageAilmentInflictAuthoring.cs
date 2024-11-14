@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if DAMAGE_MODULE
+using System;
 using Src.PackageCandidate.GameReady.Ailments.Runtime;
 using Unity.Entities;
 using UnityEngine;
@@ -23,3 +24,4 @@ namespace Src.PackageCandidate.GameReady.Ailments.Hybrid
         }
     }
 }
+#endif

@@ -3,7 +3,6 @@ using Core.Hybrid;
 using GameReady.Ailments.Runtime;
 using Trove.PolymorphicStructs;
 using Unity.Entities;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 namespace Src.PackageCandidate.GameReady.Ailments.Hybrid
@@ -47,24 +46,22 @@ namespace Src.PackageCandidate.GameReady.Ailments.Hybrid
 
     public abstract class AilmentBakedSo : ScriptableObject,IUniqueIdProvider
     {
-        public abstract AilmentConstructor BakeAilment(IBaker blobBuilder);
         public abstract void BakeAilment(ref BlobBuilder blobBuilder, ref AilmentConstructor constructor);
         public abstract int id { get; }
     }
 
     [CreateAssetMenu(menuName = "Sufferenger/Ailments/Set tag ailment")]
-    public class SetTagAilmentSo : AilmentBakedSo
+    public class AddTagAilmentSo : AilmentBakedSo
     {
         [SerializeField] private AddTagAilmentConstructor node;
+        [SerializeField] private AilmentRootConstructorBaked root;
 
-        public override AilmentConstructor BakeAilment(IBaker blobBuilder)
-        {
-            return node;
-        }
-
+     
         public override void BakeAilment(ref BlobBuilder blobBuilder, ref AilmentConstructor constructor)
         {
-            constructor = node;
+            var cp= node;
+            constructor = cp;
+            cp.constructor = root.Bake();
         }
 
         public override int id => node.constructor.stackGroupId;

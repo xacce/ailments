@@ -1,13 +1,10 @@
-﻿using NUnit.Compatibility;
-using Src.PackageCandidate.Attributer;
-using Sufferenger;
+﻿using Src.PackageCandidate.Attributer;
 using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Mathematics;
-using UnityEngine;
 
 namespace GameReady.Ailments.Runtime.Jobs
 {
@@ -15,7 +12,9 @@ namespace GameReady.Ailments.Runtime.Jobs
     [WithAll(typeof(Simulate))]
     internal partial struct AilmentResolverJob : IJobEntity, IJobEntityChunkBeginEnd
     {
+#if DAMAGE_MODULE
         [ReadOnly] public NativeHashMap<int2, int> dotDefensiveAttributes;
+#endif
 
         // public EntityCommandBuffer.ParallelWriter ecb;
         // [ReadOnly] public NativeHashMap<int, AilmentDatabaseElement> db;
@@ -29,7 +28,9 @@ namespace GameReady.Ailments.Runtime.Jobs
             DynamicBuffer<ActiveAilmentCounter> counter,
             DynamicBuffer<ApplyAilment> applies,
             DynamicBuffer<AttributeValue> attributeValues,
+#if DAMAGE_MODULE
             DynamicBuffer<DealDamage> dmgBuffer, //TODO remove me and call it inside queue
+#endif
             AttributeDependency attributeDependency,
             Entity entity)
         {
@@ -74,10 +75,18 @@ namespace GameReady.Ailments.Runtime.Jobs
             if (ctx.attributesStored)
             {
                 var attributesRw = new AttributesRw() { values = attributeValues.AsNativeArray(), originDependencies = attributeDependency };
+                var en = ctx.baseValues.GetEnumerator();
+                while (en.MoveNext())
+                {
+                    var kv = en.Current;
+                    attributesRw.AddBase(kv.Key, kv.Value);
+                } 
+                en.Dispose();
             }
 
             if (ctx.dmgStored)
             {
+#if DAMAGE_MODULE
                 var outDmg = new int3x3();
                 for (int i = 0; i < 3; i++)
                 {
@@ -96,6 +105,7 @@ namespace GameReady.Ailments.Runtime.Jobs
                 }
 
                 dmgBuffer.Add(new DealDamage(outDmg));
+#endif
                 // Debug.Log("Has stored dmg");
             }
 

@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Core.Hybrid;
 using GameReady.Ailments.Hybrid;
 using Src.PackageCandidate.Attributer;
+using Src.PackageCandidate.Attributer.Authoring;
 using Src.PackageCandidate.GameReady.Ailments.Hybrid;
 using Trove.PolymorphicStructs;
 using Unity.Collections;
@@ -51,7 +52,7 @@ namespace GameReady.Ailments.Runtime
         public void AddBaseAttributeValue(int attributeIndex, float value)
         {
             if (!baseValues.ContainsKey(attributeIndex)) baseValues[attributeIndex] = value;
-            else baseValues[attributeIndex] = value;
+            baseValues[attributeIndex] += value;
             attributesStored = true;
         }
 
@@ -65,8 +66,10 @@ namespace GameReady.Ailments.Runtime
     public partial struct AilmentPreConstructedContext
     {
         [ReadOnly] public DynamicBuffer<AttributeValue> attributes;
+#if DAMAGE_MODULE
         public int3x3 inputDmg;
         public int2 inputDmgIndex;
+#endif
     }
 
     public struct AilmentRootData
@@ -79,6 +82,41 @@ namespace GameReady.Ailments.Runtime
     }
 
     [Serializable]
+    public partial struct AilmentRootConstructorBaked
+    {
+        public AttributeSo scaleDurationAttributeIndex;
+        public AilmentRootConstructor.ScaleMode durationScaleMode;
+        public AttributeSo scaleMaxStacksAttributeIndex;
+        public AilmentRootConstructor.ScaleMode maxStacksScaleMode;
+        public AttributeSo applyStacksAttributeIndex;
+        public AilmentRootConstructor.ScaleMode applySacksScaleMode;
+        public uint durationTicks;
+        public uint maxStacks;
+        public uint applyStacks;
+        public StackMode stackMode;
+
+        [PickId(typeof(AilmentBakedSo))]
+        public int stackGroupId;
+
+        public AilmentRootConstructor Bake()
+        {
+            return new AilmentRootConstructor
+            {
+                stackGroupId = stackGroupId,
+                applyStacksAttributeIndex = applyStacksAttributeIndex ? applyStacksAttributeIndex.id : 0,
+                scaleDurationAttributeIndex = scaleDurationAttributeIndex ? scaleDurationAttributeIndex.id : 0,
+                scaleMaxStacksAttributeIndex = scaleMaxStacksAttributeIndex ? scaleMaxStacksAttributeIndex.id : 0,
+                applyStacks = applyStacks,
+                durationTicks = durationTicks,
+                maxStacks = maxStacks,
+                stackMode = stackMode,
+                durationScaleMode = durationScaleMode,
+                applySacksScaleMode = applySacksScaleMode,
+                maxStacksScaleMode = maxStacksScaleMode,
+            };
+        }
+    }
+
     public partial struct AilmentRootConstructor
     {
         public enum ScaleMode
@@ -89,26 +127,21 @@ namespace GameReady.Ailments.Runtime
             Override,
         }
 
-        public uint durationTicks;
 
-        //todo CUSTOM DRAWER WITH ENUM COLLECTOR
-        public AttributeMap scaleDurationAttributeIndex;
+        public int scaleDurationAttributeIndex;
         public ScaleMode durationScaleMode;
 
-        public uint maxStacks;
 
-        //todo CUSTOM DRAWER WITH ENUM COLLECTOR
-        public AttributeMap scaleMaxStacksAttributeIndex;
+        public int scaleMaxStacksAttributeIndex;
         public ScaleMode maxStacksScaleMode;
 
-        public uint applyStacks;
 
-        //todo CUSTOM DRAWER WITH ENUM COLLECTOR
-        public AttributeMap applyStacksAttributeIndex;
+        public int applyStacksAttributeIndex;
         public ScaleMode applySacksScaleMode;
-
+        public uint durationTicks;
+        public uint maxStacks;
+        public uint applyStacks;
         public StackMode stackMode;
-        [PickId(typeof(AilmentBakedSo))]
         public int stackGroupId;
 
         public static AilmentRootConstructor Default = new AilmentRootConstructor()
@@ -117,12 +150,6 @@ namespace GameReady.Ailments.Runtime
             maxStacks = 1,
             durationTicks = 120,
             stackMode = StackMode.Override,
-            durationScaleMode = ScaleMode.Multiplier,
-            applySacksScaleMode = ScaleMode.Flat,
-            maxStacksScaleMode = ScaleMode.Flat,
-            applyStacksAttributeIndex = AttributeMap.DamageType1AilmentStackCount,
-            scaleDurationAttributeIndex = AttributeMap.DamageType1AilmentDuration,
-            scaleMaxStacksAttributeIndex = AttributeMap.DamageType1AilmentMaxStackCount,
         };
 
         public static uint GetScaled(ScaleMode mode, uint origin, uint mod)
@@ -219,7 +246,7 @@ namespace GameReady.Ailments.Runtime
                 for (int i = 0; i < baked.Length; i++)
                 {
                     Debug.Log($"Ailment was baked, {baked[i].GetType()}, {baked[i]}");
-                    csts[i] = baked[i].BakeAilment(baker);
+                    baked[i].BakeAilment(ref builder, ref csts[i]);
                 }
             }
 
@@ -242,7 +269,6 @@ namespace GameReady.Ailments.Runtime
                 var csts = builder.Allocate(ref definition.construct, baked.Length);
                 for (int i = 0; i < baked.Length; i++)
                 {
-                    Debug.Log($"Ailment was baked, {baked[i].GetType()}, {baked[i]}");
                     baked[i].BakeAilment(ref builder, ref csts[i]);
                 }
             }

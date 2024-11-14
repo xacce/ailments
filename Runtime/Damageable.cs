@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if DAMAGE_MODULE
+using System;
 using GameReady.Ailments.Runtime;
 using Sufferenger;
 using Unity.Entities;
@@ -22,3 +23,4 @@ namespace Src.PackageCandidate.GameReady.Ailments.Runtime
         public BlobAssetReference<Blob> blob;
     }
 }
+#endif
