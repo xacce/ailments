@@ -14,7 +14,7 @@ namespace GameReady.Ailments.Hybrid
                 AddComponent<AilmentCarrier>(e);
                 AddBuffer<ActiveAilmentCounter>(e);
                 AddBuffer<ApplyAilment>(e);
-                AddBuffer<ConstructedAilment>(e);
+                AddBuffer<AilmentRuntime>(e);
             }
         }
     }

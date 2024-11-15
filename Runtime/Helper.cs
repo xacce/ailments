@@ -10,28 +10,21 @@ namespace GameReady.Ailments.Runtime
     [BurstCompile]
     public static class Helper
     {
-        // [BurstCompile]
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // public static int GetAilmentTicksCount(in ActiveAilmentElement.Effectivity effectivity, int baseTicks)
-        // {
-        //     Debug.Log($"{effectivity.ticksEffectivity} = {(int)math.floor(baseTicks * effectivity.ticksEffectivity)}");
-        //     return (int)math.floor(baseTicks * effectivity.ticksEffectivity);
-        // }
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryAddAilment(in ConstructedAilment apply, ref DynamicBuffer<ConstructedAilment> elements,
+        public static bool TryAddAilment(in AilmentRuntime apply, ref DynamicBuffer<AilmentRuntime> elements,
             ref DynamicBuffer<ActiveAilmentCounter> counter, out int ailmentIndex)
         {
             ailmentIndex = -1;
-            var stackGroupId = apply.root.stackGroupId;
+            var stackGroupId = apply.rootRuntimeData.stackGroupId;
             var count = GetAilmentCount(stackGroupId, ref counter, out var counterIndex);
 
-            switch (apply.root.stackMode)
+            switch (apply.rootRuntimeData.stackMode)
             {
                 case StackMode.Override:
                 {
-                    if (count >= apply.root.maxStacks)
+                    if (count >= apply.rootRuntimeData.maxStacks)
                     {
                         if (TryGetFirstIndexById(stackGroupId, ref elements, out ailmentIndex))
                         {
@@ -44,7 +37,7 @@ namespace GameReady.Ailments.Runtime
                     break;
                 }
                 case StackMode.Discard:
-                    if (count >= apply.root.maxStacks) return false;
+                    if (count >= apply.rootRuntimeData.maxStacks) return false;
                     ailmentIndex = elements.Length;
                     elements.Add(apply);
                     break;
@@ -115,12 +108,12 @@ namespace GameReady.Ailments.Runtime
 
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryGetFirstIndexById(int ailmentId, ref DynamicBuffer<ConstructedAilment> elements, out int index)
+        public static bool TryGetFirstIndexById(int ailmentId, ref DynamicBuffer<AilmentRuntime> elements, out int index)
         {
             for (var i = 0; i < elements.Length; i++)
             {
                 var c = elements[i];
-                if (c.root.stackGroupId == ailmentId)
+                if (c.rootRuntimeData.stackGroupId == ailmentId)
                 {
                     index = i;
                     return true;

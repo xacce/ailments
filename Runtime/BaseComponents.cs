@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using Core.Hybrid;
-using GameReady.Ailments.Hybrid;
+﻿using Src.PackageCandidate.Ailments.Runtime;
 using Src.PackageCandidate.Attributer;
-using Src.PackageCandidate.Attributer.Authoring;
-using Src.PackageCandidate.GameReady.Ailments.Hybrid;
 using Trove.PolymorphicStructs;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using UnityEngine;
 
 namespace GameReady.Ailments.Runtime
 {
@@ -21,27 +13,7 @@ namespace GameReady.Ailments.Runtime
     }
 
 
-    [PolymorphicStructInterface]
-    public interface IAilment
-    {
-        public void OnFresh(ref AilmentConstructedContext ctx);
-        public void OnTick(ref AilmentConstructedContext ctx);
-        public void OnExpired(ref AilmentConstructedContext ctx);
-    }
-
-    [PolymorphicStructInterface]
-    public interface IAilmentConstructor
-    {
-        public bool TryConstruct(AilmentPreConstructedContext ctx, out ConstructedAilment constructed);
-    }
-
-
-    public partial struct AilmentConstructor
-    {
-    }
-
-
-    public partial struct AilmentConstructedContext
+    public partial struct AilmentCreatedContext
     {
         public AilmentCarrier carrier;
         public int3x3 accomulatedDmg;
@@ -63,7 +35,7 @@ namespace GameReady.Ailments.Runtime
         }
     }
 
-    public partial struct AilmentPreConstructedContext
+    public partial struct AilmentCreationContext
     {
         [ReadOnly] public DynamicBuffer<AttributeValue> attributes;
 #if DAMAGE_MODULE
@@ -72,7 +44,7 @@ namespace GameReady.Ailments.Runtime
 #endif
     }
 
-    public struct AilmentRootData
+    public partial struct AilmentRootRuntimeData
     {
         public int stackGroupId;
         public uint duration;
@@ -81,43 +53,7 @@ namespace GameReady.Ailments.Runtime
         public StackMode stackMode;
     }
 
-    [Serializable]
-    public partial struct AilmentRootConstructorBaked
-    {
-        public AttributeSo scaleDurationAttributeIndex;
-        public AilmentRootConstructor.ScaleMode durationScaleMode;
-        public AttributeSo scaleMaxStacksAttributeIndex;
-        public AilmentRootConstructor.ScaleMode maxStacksScaleMode;
-        public AttributeSo applyStacksAttributeIndex;
-        public AilmentRootConstructor.ScaleMode applySacksScaleMode;
-        public uint durationTicks;
-        public uint maxStacks;
-        public uint applyStacks;
-        public StackMode stackMode;
-
-        [PickId(typeof(AilmentBakedSo))]
-        public int stackGroupId;
-
-        public AilmentRootConstructor Bake()
-        {
-            return new AilmentRootConstructor
-            {
-                stackGroupId = stackGroupId,
-                applyStacksAttributeIndex = applyStacksAttributeIndex ? applyStacksAttributeIndex.id : 0,
-                scaleDurationAttributeIndex = scaleDurationAttributeIndex ? scaleDurationAttributeIndex.id : 0,
-                scaleMaxStacksAttributeIndex = scaleMaxStacksAttributeIndex ? scaleMaxStacksAttributeIndex.id : 0,
-                applyStacks = applyStacks,
-                durationTicks = durationTicks,
-                maxStacks = maxStacks,
-                stackMode = stackMode,
-                durationScaleMode = durationScaleMode,
-                applySacksScaleMode = applySacksScaleMode,
-                maxStacksScaleMode = maxStacksScaleMode,
-            };
-        }
-    }
-
-    public partial struct AilmentRootConstructor
+    public partial struct AilmentBlob
     {
         public enum ScaleMode
         {
@@ -127,30 +63,34 @@ namespace GameReady.Ailments.Runtime
             Override,
         }
 
-
-        public int scaleDurationAttributeIndex;
-        public ScaleMode durationScaleMode;
-
-
-        public int scaleMaxStacksAttributeIndex;
-        public ScaleMode maxStacksScaleMode;
-
-
-        public int applyStacksAttributeIndex;
-        public ScaleMode applySacksScaleMode;
-        public uint durationTicks;
-        public uint maxStacks;
-        public uint applyStacks;
-        public StackMode stackMode;
-        public int stackGroupId;
-
-        public static AilmentRootConstructor Default = new AilmentRootConstructor()
+        public struct Root
         {
-            applyStacks = 1,
-            maxStacks = 1,
-            durationTicks = 120,
-            stackMode = StackMode.Override,
-        };
+            public int scaleDurationAttributeIndex;
+            public ScaleMode durationScaleMode;
+            public int scaleMaxStacksAttributeIndex;
+            public ScaleMode maxStacksScaleMode;
+            public int applyStacksAttributeIndex;
+            public ScaleMode applySacksScaleMode;
+            public uint durationTicks;
+            public uint maxStacks;
+            public uint applyStacks;
+            public StackMode stackMode;
+            public int stackGroupId;
+        }
+
+        public struct PolyData
+        {
+            public int3x3 intMatrix;
+            public BlobArray<AttributeIndexWithValue> attributes;
+            public int i1;
+            public int i2;
+            public int f1;
+            public int f2;
+        }
+
+        public Root root;
+        public PolyData polyData;
+
 
         public static uint GetScaled(ScaleMode mode, uint origin, uint mod)
         {
@@ -186,95 +126,34 @@ namespace GameReady.Ailments.Runtime
             return 0;
         }
 
-        public AilmentRootData Construct(AilmentPreConstructedContext ctx)
+        public AilmentRootRuntimeData Create(AilmentCreationContext ctx)
         {
-            return new AilmentRootData()
+            return new AilmentRootRuntimeData()
             {
-                duration = GetScaled(durationScaleMode, durationTicks, (uint)ctx.attributes.GetCurrent(scaleDurationAttributeIndex)),
-                maxStacks = GetScaled(maxStacksScaleMode, maxStacks, (uint)ctx.attributes.GetCurrent(scaleMaxStacksAttributeIndex)),
-                stackGroupId = stackGroupId,
-                stackMode = stackMode,
-                split = GetScaled(applySacksScaleMode, applyStacks, (uint)ctx.attributes.GetCurrent(applyStacksAttributeIndex)),
+                duration = GetScaled(root.durationScaleMode, root.durationTicks, (uint)ctx.attributes.GetCurrent(root.scaleDurationAttributeIndex)),
+                maxStacks = GetScaled(root.maxStacksScaleMode, root.maxStacks, (uint)ctx.attributes.GetCurrent(root.scaleMaxStacksAttributeIndex)),
+                stackGroupId = root.stackGroupId,
+                stackMode = root.stackMode,
+                split = GetScaled(root.applySacksScaleMode, root.applyStacks, (uint)ctx.attributes.GetCurrent(root.applyStacksAttributeIndex)),
             };
         }
     }
 
     [InternalBufferCapacity(0)]
-    public partial struct ConstructedAilment : IBufferElementData
+    public partial struct AilmentRuntime : IBufferElementData
     {
-        public AilmentRootData root;
-
+        public BlobAssetReference<AilmentBlob> blob;
+        public AilmentRootRuntimeData rootRuntimeData;
         public Ailment ailment;
-        // public BlobAssetReference<AilmentRootConstructor> constructor;
     }
 
-
-    public struct AilmentConstructors
+    [InternalBufferCapacity(0)]
+    public partial struct AilmentElement : IBufferElementData
     {
-        public bool empty;
-        public BlobArray<AilmentConstructor> construct;
-
-        public NativeArray<ConstructedAilment> Construct(AilmentPreConstructedContext ctx)
-        {
-            var ailments = new NativeList<ConstructedAilment>(construct.Length, Allocator.Temp); //todo shared array
-            for (int i = 0; i < construct.Length; i++)
-            {
-                ref var c = ref construct[i];
-                if (c.TryConstruct(ctx, out var a)) ailments.Add(a);
-            }
-
-            return ailments;
-        }
-
-        public bool TryConstruct(AilmentPreConstructedContext ctx, int index, out ConstructedAilment constructed)
-        {
-            return construct[index].TryConstruct(ctx, out constructed);
-        }
-
-#if UNITY_EDITOR
-        public static BlobAssetReference<AilmentConstructors> Create(AilmentBakedSo[] baked, IBaker baker)
-        {
-            BlobBuilder builder = new BlobBuilder(Allocator.Temp);
-            ref var definition = ref builder.ConstructRoot<AilmentConstructors>();
-            if (baked == null || baked.Length == 0)
-            {
-                definition.empty = true;
-            }
-            else
-            {
-                var csts = builder.Allocate(ref definition.construct, baked.Length);
-                for (int i = 0; i < baked.Length; i++)
-                {
-                    Debug.Log($"Ailment was baked, {baked[i].GetType()}, {baked[i]}");
-                    baked[i].BakeAilment(ref builder, ref csts[i]);
-                }
-            }
-
-            var blobReference = builder.CreateBlobAssetReference<AilmentConstructors>(Allocator.Persistent);
-            baker.AddBlobAsset(ref blobReference, out _);
-            builder.Dispose();
-
-
-            return blobReference;
-        }
-
-        public static void Create(ref AilmentConstructors definition, ref BlobBuilder builder, AilmentBakedSo[] baked)
-        {
-            if (baked == null || baked.Length == 0)
-            {
-                definition.empty = true;
-            }
-            else
-            {
-                var csts = builder.Allocate(ref definition.construct, baked.Length);
-                for (int i = 0; i < baked.Length; i++)
-                {
-                    baked[i].BakeAilment(ref builder, ref csts[i]);
-                }
-            }
-        }
-#endif
+        public BlobAssetReference<AilmentBlob> blob;
+        public Ailment ailment;
     }
+
 
     [InternalBufferCapacity(0)]
     public partial struct ActiveAilmentCounter : IBufferElementData
@@ -286,6 +165,6 @@ namespace GameReady.Ailments.Runtime
     [InternalBufferCapacity(0)]
     public partial struct ApplyAilment : IBufferElementData
     {
-        public ConstructedAilment constructed;
+        public AilmentRuntime ailmentRuntime;
     }
 }

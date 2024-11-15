@@ -24,7 +24,7 @@ namespace GameReady.Ailments.Runtime.Jobs
         [BurstCompile]
         private void Execute(
             ref AilmentCarrier carrier,
-            DynamicBuffer<ConstructedAilment> active,
+            DynamicBuffer<AilmentRuntime> active,
             DynamicBuffer<ActiveAilmentCounter> counter,
             DynamicBuffer<ApplyAilment> applies,
             DynamicBuffer<AttributeValue> attributeValues,
@@ -36,15 +36,15 @@ namespace GameReady.Ailments.Runtime.Jobs
         {
             if (active.IsEmpty && applies.IsEmpty) return;
             _storedAttributes.Clear();
-            var ctx = new AilmentConstructedContext() { carrier = carrier, baseValues = _storedAttributes };
+            var ctx = new AilmentCreatedContext() { carrier = carrier, baseValues = _storedAttributes };
             for (int i = 0; i < applies.Length; i++)
             {
                 var apply = applies[i];
-                var result = Helper.TryAddAilment(apply.constructed, ref active, ref counter, out int ailmentIndex);
+                var result = Helper.TryAddAilment(apply.ailmentRuntime, ref active, ref counter, out int ailmentIndex);
                 if (result)
                 {
                     // ref var blob = ref apply.constructed.BlobAssetReference_0.Value;
-                    active[ailmentIndex].ailment.OnFresh(ref ctx);
+                    active[ailmentIndex].ailment.OnFresh(ref ctx,active[ailmentIndex]);
                 }
             }
 
@@ -55,20 +55,20 @@ namespace GameReady.Ailments.Runtime.Jobs
                 var activeAilment = active[i];
                 // ref var blob = ref ailment.blob.Value;
                 bool expired = false;
-                activeAilment.root.duration--;
-                activeAilment.ailment.OnTick(ref ctx);
+                activeAilment.rootRuntimeData.duration--;
+                activeAilment.ailment.OnTick(ref ctx,activeAilment);
                 active[i] = activeAilment;
 
-                if (activeAilment.root.duration <= 0)
+                if (activeAilment.rootRuntimeData.duration <= 0)
                 {
                     active.RemoveAt(i);
                     expired = true;
-                    Helper.UpdateAilmentCount(ref counter, activeAilment.root.stackGroupId, 1);
+                    Helper.UpdateAilmentCount(ref counter, activeAilment.rootRuntimeData.stackGroupId, 1);
                 }
 
                 if (expired)
                 {
-                    activeAilment.ailment.OnExpired(ref ctx);
+                    activeAilment.ailment.OnExpired(ref ctx, activeAilment);
                 }
             }
 
@@ -80,7 +80,8 @@ namespace GameReady.Ailments.Runtime.Jobs
                 {
                     var kv = en.Current;
                     attributesRw.AddBase(kv.Key, kv.Value);
-                } 
+                }
+
                 en.Dispose();
             }
 
