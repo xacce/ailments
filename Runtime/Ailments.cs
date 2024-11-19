@@ -31,9 +31,9 @@ namespace Src.PackageCandidate.Ailments.Runtime
         public void OnFresh(ref AilmentCreatedContext ctx, in AilmentRuntime runtime)
         {
             ref var blob = ref runtime.blob.Value;
-            for (int i = 0; i < blob.polyData.attributes.Length; i++)
+            for (int i = 0; i < blob.polyData.attributes.list.Length; i++)
             {
-                ctx.AddBaseAttributeValue(blob.polyData.attributes[i].index, blob.polyData.attributes[i].value);
+                ctx.AddBaseAttributeValue(blob.polyData.attributes.list[i].index, blob.polyData.attributes.list[i].value);
             }
         }
 
@@ -44,9 +44,9 @@ namespace Src.PackageCandidate.Ailments.Runtime
         public void OnExpired(ref AilmentCreatedContext ctx, in AilmentRuntime runtime)
         {
             ref var blob = ref runtime.blob.Value;
-            for (int i = 0; i < blob.polyData.attributes.Length; i++)
+            for (int i = 0; i < blob.polyData.attributes.list.Length; i++)
             {
-                ctx.AddBaseAttributeValue(blob.polyData.attributes[i].index, -blob.polyData.attributes[i].value);
+                ctx.AddBaseAttributeValue(blob.polyData.attributes.list[i].index, -blob.polyData.attributes.list[i].value);
             }
         }
     }

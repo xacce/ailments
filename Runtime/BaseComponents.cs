@@ -81,7 +81,7 @@ namespace GameReady.Ailments.Runtime
         public struct PolyData
         {
             public int3x3 intMatrix;
-            public BlobArray<AttributeIndexWithValue> attributes;
+            public AttributeShortList attributes;
             public int i1;
             public int i2;
             public int f1;

@@ -18,7 +18,7 @@ namespace Src.PackageCandidate.Ailments.Hybrid
 
         public override void Bake(ref AilmentBlob data, ref BlobBuilder blobBuilder)
         {
-            affectAttributes.BakeToBlobArray(ref blobBuilder, ref data.polyData.attributes);
+            affectAttributes.BakeToShort(ref blobBuilder, ref data.polyData.attributes);
             data.root = root.Bake();
         }
     }
