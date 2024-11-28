@@ -1,6 +1,7 @@
 ﻿using GameReady.Ailments.Runtime;
 using Trove.PolymorphicStructs;
 using Unity.Entities;
+using UnityEngine;
 
 namespace Src.PackageCandidate.Ailments.Runtime
 {

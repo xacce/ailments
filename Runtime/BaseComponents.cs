@@ -24,7 +24,7 @@ namespace GameReady.Ailments.Runtime
         public void AddBaseAttributeValue(int attributeIndex, float value)
         {
             if (!baseValues.ContainsKey(attributeIndex)) baseValues[attributeIndex] = value;
-            baseValues[attributeIndex] += value;
+            else baseValues[attributeIndex] += value;
             attributesStored = true;
         }
 

@@ -40,12 +40,12 @@ namespace GameReady.Ailments.Runtime.Jobs
             for (int i = 0; i < applies.Length; i++)
             {
                 var apply = applies[i];
-                var result = Helper.TryAddAilment(apply.ailmentRuntime, ref active, ref counter, out int ailmentIndex);
-                if (result)
-                {
-                    // ref var blob = ref apply.constructed.BlobAssetReference_0.Value;
-                    active[ailmentIndex].ailment.OnFresh(ref ctx,active[ailmentIndex]);
-                }
+                var result = Helper.TryAddAilment(ref ctx,apply.ailmentRuntime, ref active, ref counter, out int ailmentIndex);
+                // if (result)
+                // {
+                //     // ref var blob = ref apply.constructed.BlobAssetReference_0.Value;
+                //     active[ailmentIndex].ailment.OnFresh(ref ctx,active[ailmentIndex]);
+                // }
             }
 
             applies.Clear();

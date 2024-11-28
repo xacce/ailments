@@ -10,10 +10,9 @@ namespace GameReady.Ailments.Runtime
     [BurstCompile]
     public static class Helper
     {
-
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryAddAilment(in AilmentRuntime apply, ref DynamicBuffer<AilmentRuntime> elements,
+        public static bool TryAddAilment(ref AilmentCreatedContext ctx, in AilmentRuntime apply, ref DynamicBuffer<AilmentRuntime> elements,
             ref DynamicBuffer<ActiveAilmentCounter> counter, out int ailmentIndex)
         {
             ailmentIndex = -1;
@@ -28,12 +27,17 @@ namespace GameReady.Ailments.Runtime
                     {
                         if (TryGetFirstIndexById(stackGroupId, ref elements, out ailmentIndex))
                         {
+                            //todo refact this pls, less optimization
+                            elements[ailmentIndex].ailment.OnExpired(ref ctx, elements[ailmentIndex]);
                             elements[ailmentIndex] = apply;
+                            elements[ailmentIndex].ailment.OnFresh(ref ctx, elements[ailmentIndex]);
                             return true;
                         }
                     }
+
                     ailmentIndex = elements.Length;
                     elements.Add(apply);
+                    elements[ailmentIndex].ailment.OnFresh(ref ctx, elements[ailmentIndex]);
                     break;
                 }
                 case StackMode.Discard:
