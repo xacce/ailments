@@ -1,7 +1,11 @@
 ﻿#if DAMAGE_MODULE
 using System;
 using GameReady.Ailments.Runtime;
+using Src.PackageCandidate.Ailments.Hybrid;
+using Src.PackageCandidate.Ailments.Runtime;
 using Src.PackageCandidate.Attributer;
+using Src.PackageCandidate.Sufferenger.Authoring;
+using Sufferenger;
 using Trove.PolymorphicStructs;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -83,6 +87,12 @@ namespace Src.PackageCandidate.GameReady.Ailments.Hybrid
         }
 
         public override int id => node.constructor.stackGroupId;
+        public override Ailment ailment { get; }
+
+        public override void Bake(ref AilmentBlob data, ref BlobBuilder blobBuilder)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 #endif

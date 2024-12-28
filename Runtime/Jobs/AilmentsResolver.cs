@@ -4,7 +4,7 @@ using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
-using Unity.Mathematics;
+using UnityEngine;
 
 namespace GameReady.Ailments.Runtime.Jobs
 {
@@ -31,7 +31,7 @@ namespace GameReady.Ailments.Runtime.Jobs
 #if DAMAGE_MODULE
             DynamicBuffer<DealDamage> dmgBuffer, //TODO remove me and call it inside queue
 #endif
-            AttributeDependency attributeDependency,
+            DynamicBuffer<AttributeDependencyElement> attributeDependency,
             Entity entity)
         {
             if (active.IsEmpty && applies.IsEmpty) return;
@@ -40,7 +40,8 @@ namespace GameReady.Ailments.Runtime.Jobs
             for (int i = 0; i < applies.Length; i++)
             {
                 var apply = applies[i];
-                var result = Helper.TryAddAilment(ref ctx,apply.ailmentRuntime, ref active, ref counter, out int ailmentIndex);
+                AilmentBlob.AffectDefensive(ref apply.ailmentRuntime, attributeValues);
+                var result = Helper.TryAddAilment(ref ctx, apply.ailmentRuntime, ref active, ref counter, out int ailmentIndex);
                 // if (result)
                 // {
                 //     // ref var blob = ref apply.constructed.BlobAssetReference_0.Value;
@@ -56,7 +57,7 @@ namespace GameReady.Ailments.Runtime.Jobs
                 // ref var blob = ref ailment.blob.Value;
                 bool expired = false;
                 activeAilment.rootRuntimeData.duration--;
-                activeAilment.ailment.OnTick(ref ctx,activeAilment);
+                activeAilment.ailment.OnTick(ref ctx, activeAilment);
                 active[i] = activeAilment;
 
                 if (activeAilment.rootRuntimeData.duration <= 0)
@@ -74,7 +75,7 @@ namespace GameReady.Ailments.Runtime.Jobs
 
             if (ctx.attributesStored)
             {
-                var attributesRw = new AttributesRw() { values = attributeValues.AsNativeArray(), originDependencies = attributeDependency };
+                var attributesRw = new AttributesRw(attributeValues, attributeDependency);
                 var en = ctx.baseValues.GetEnumerator();
                 while (en.MoveNext())
                 {

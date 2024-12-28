@@ -2,11 +2,15 @@
 using Core.Hybrid;
 using Src.PackageCandidate.Ailments.Hybrid;
 using Src.PackageCandidate.Attributer.Authoring;
+using Unity.Entities;
+using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Tables;
 
 namespace GameReady.Ailments.Runtime
 {
     [Serializable]
-    public partial struct AilmentBlobRootBaked
+    public partial class AilmentBlobRootBaked
     {
         public AttributeSo scaleDurationAttributeIndex;
         public AilmentBlob.ScaleMode durationScaleMode;
@@ -14,28 +18,48 @@ namespace GameReady.Ailments.Runtime
         public AilmentBlob.ScaleMode maxStacksScaleMode;
         public AttributeSo applyStacksAttributeIndex;
         public AilmentBlob.ScaleMode applySacksScaleMode;
+        public AttributeSo applyValidationRandomAttribute;
+
+        public AttributeSo defensiveScaleDurationAttributeIndex;
+        public AilmentBlob.ScaleMode defensiveDurationScaleMode;
+        public AttributeSo defensiveScaleMaxStacksAttributeIndex;
+        public AilmentBlob.ScaleMode defensiveMaxStacksScaleMode;
+
+
         public uint durationTicks;
         public uint maxStacks;
         public uint applyStacks;
         public StackMode stackMode;
 
+        [SerializeField] LocalizedString title = new LocalizedString();
+        [SerializeField] LocalizedString description = new LocalizedString();
+
         [PickId(typeof(AilmentBakedSo))] public int stackGroupId;
 
-        public AilmentBlob.Root Bake()
+        public void Bake(ref BlobBuilder builder, ref AilmentBlob.Root field)
         {
-            return new AilmentBlob.Root()
+            field = new AilmentBlob.Root()
             {
                 stackGroupId = stackGroupId,
                 applyStacksAttributeIndex = applyStacksAttributeIndex ? applyStacksAttributeIndex.id : 0,
                 scaleDurationAttributeIndex = scaleDurationAttributeIndex ? scaleDurationAttributeIndex.id : 0,
                 scaleMaxStacksAttributeIndex = scaleMaxStacksAttributeIndex ? scaleMaxStacksAttributeIndex.id : 0,
-                applyStacks = applyStacks,
-                durationTicks = durationTicks,
-                maxStacks = maxStacks,
+                applyValidationRandomAttribute = applyValidationRandomAttribute ? applyValidationRandomAttribute.id : -1,
+
+                defensiveScaleDurationAttributeIndex = scaleDurationAttributeIndex ? scaleDurationAttributeIndex.id : 0,
+                defensiveScaleMaxStacksAttributeIndex = scaleMaxStacksAttributeIndex ? scaleMaxStacksAttributeIndex.id : 0,
+
+                applyStacks = (int)applyStacks,
+                durationTicks = (int)durationTicks,
+                maxStacks = (int)maxStacks,
                 stackMode = stackMode,
                 durationScaleMode = durationScaleMode,
-                applySacksScaleMode = applySacksScaleMode,
+                applyStacksScaleMode = applySacksScaleMode,
                 maxStacksScaleMode = maxStacksScaleMode,
+                defensiveScaleDurationMode = defensiveDurationScaleMode,
+                defensiveScaleMaxStacksMode = defensiveMaxStacksScaleMode,
+                title = title,
+                description = description,
             };
         }
     }

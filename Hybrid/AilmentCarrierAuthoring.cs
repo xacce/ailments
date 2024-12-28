@@ -2,7 +2,7 @@
 using Unity.Entities;
 using UnityEngine;
 
-namespace GameReady.Ailments.Hybrid
+namespace Src.PackageCandidate.Ailments.Hybrid
 {
     public class AilmentCarrierAuthoring : MonoBehaviour
     {

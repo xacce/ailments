@@ -18,7 +18,7 @@ namespace GameReady.Ailments.Runtime
             ailmentIndex = -1;
             var stackGroupId = apply.rootRuntimeData.stackGroupId;
             var count = GetAilmentCount(stackGroupId, ref counter, out var counterIndex);
-
+            if (!(apply.rootRuntimeData.duration > 0)) return false;
             switch (apply.rootRuntimeData.stackMode)
             {
                 case StackMode.Override:
