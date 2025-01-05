@@ -1,16 +1,12 @@
 ﻿using System.Runtime.CompilerServices;
-using Core.Hybrid;
 using Core.Runtime;
-using Src.PackageCandidate.Ailments.Runtime;
+using GameReady.Ailments.Runtime;
 using Src.PackageCandidate.Attributer;
-using Src.PackageCandidate.Attributer.Authoring;
-using Trove.PolymorphicStructs;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using UnityEngine;
 
-namespace GameReady.Ailments.Runtime
+namespace Src.PackageCandidate.Ailments.Runtime
 {
     public partial struct AilmentCarrier : IComponentData
     {
@@ -20,8 +16,9 @@ namespace GameReady.Ailments.Runtime
 
     public partial struct AilmentCreatedContext
     {
+        public float deltaTime;
         public AilmentCarrier carrier;
-        public int3x3 accomulatedDmg;
+        public float3x3 accomulatedDmg;
         public NativeHashMap<int, float> baseValues;
         public bool dmgStored;
         public bool attributesStored;
@@ -33,7 +30,7 @@ namespace GameReady.Ailments.Runtime
             attributesStored = true;
         }
 
-        public void StoreDamage(int3x3 dmg)
+        public void StoreDamage(float3x3 dmg)
         {
             accomulatedDmg += dmg;
             dmgStored = true;
@@ -45,7 +42,7 @@ namespace GameReady.Ailments.Runtime
         public Unity.Mathematics.Random rnd;
         [ReadOnly] public DynamicBuffer<AttributeValue> attributes;
 #if DAMAGE_MODULE
-        public int3x3 inputDmg;
+        public float3x3 inputDmg;
         public int2 inputDmgIndex;
 #endif
     }
@@ -53,7 +50,7 @@ namespace GameReady.Ailments.Runtime
     public partial struct AilmentRootRuntimeData
     {
         public int stackGroupId;
-        public int duration;
+        public float duration;
         public int maxStacks;
         public int split;
         public StackMode stackMode;
@@ -86,7 +83,7 @@ namespace GameReady.Ailments.Runtime
             public ScaleMode defensiveScaleMaxStacksMode;
 
 
-            public int durationTicks;
+            public float duration;
             public int maxStacks;
             public int applyStacks;
             public StackMode stackMode;
@@ -98,11 +95,12 @@ namespace GameReady.Ailments.Runtime
         public struct PolyData
         {
             public int3x3 intMatrix;
+            public int2 int2;
             public AttributeShortList attributes;
             public int i1;
             public int i2;
-            public int f1;
-            public int f2;
+            public float f1;
+            public float f2;
         }
 
         // public partial struct GameData
@@ -181,7 +179,7 @@ namespace GameReady.Ailments.Runtime
         {
             return new AilmentRootRuntimeData()
             {
-                duration = GetScaled(root.durationScaleMode, root.durationTicks, (int)ctx.attributes.GetCurrent(root.scaleDurationAttributeIndex)),
+                duration = GetScaled(root.durationScaleMode, root.duration, (int)ctx.attributes.GetCurrent(root.scaleDurationAttributeIndex)),
                 maxStacks = GetScaled(root.maxStacksScaleMode, root.maxStacks, (int)ctx.attributes.GetCurrent(root.scaleMaxStacksAttributeIndex)),
                 stackGroupId = root.stackGroupId,
                 stackMode = root.stackMode,

@@ -1,25 +1,23 @@
 ﻿using System.Collections.Generic;
-using System.Text;
 using GameReady.Ailments.Runtime;
 using Src.PackageCandidate.Attributer;
 using Trove.PolymorphicStructs;
 using Unity.Collections;
 using Unity.Entities;
-using UnityEngine;
+using Unity.Mathematics;
 using UnityEngine.Localization.Settings;
-using UnityEngine.TextCore.Text;
 
 namespace Src.PackageCandidate.Ailments.Runtime
 {
     [PolymorphicStructInterface]
     public interface IAilment
     {
-        public bool Validate(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blob);
-        public AilmentRuntime Create(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blob);
-        public void OnFresh(ref AilmentCreatedContext ctx, in AilmentRuntime rootRuntimeData);
-        public void OnTick(ref AilmentCreatedContext ctx, in AilmentRuntime rootRuntimeData);
-        public void OnExpired(ref AilmentCreatedContext ctx, in AilmentRuntime rootRuntimeData);
-        public string ToString(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blobReference);
+        public bool Validate(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreationContext ctx, BlobAssetReference<Src.PackageCandidate.Ailments.Runtime.AilmentBlob> blob);
+        public AilmentRuntime Create(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreationContext ctx, BlobAssetReference<Src.PackageCandidate.Ailments.Runtime.AilmentBlob> blob);
+        public void OnFresh(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreatedContext ctx, in Src.PackageCandidate.Ailments.Runtime.AilmentRuntime rootRuntimeData);
+        public void OnTick(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreatedContext ctx, in Src.PackageCandidate.Ailments.Runtime.AilmentRuntime rootRuntimeData);
+        public void OnExpired(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreatedContext ctx, in Src.PackageCandidate.Ailments.Runtime.AilmentRuntime rootRuntimeData);
+        public string ToString(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreationContext ctx, BlobAssetReference<Src.PackageCandidate.Ailments.Runtime.AilmentBlob> blobReference);
     }
 
     public static class AilmentListExtension
@@ -91,6 +89,60 @@ namespace Src.PackageCandidate.Ailments.Runtime
         }
     }
 
+    [PolymorphicStruct]
+    public partial struct RawDmgAilment : IAilment
+    {
+        public float3x3 damage;
+
+        public string ToString(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blobReference)
+        {
+            ref var ailmentBlob = ref blobReference.Value;
+            return LocalizationSettings.StringDatabase.GetLocalizedString(
+                ailmentBlob.root.title.table,
+                ailmentBlob.root.title.key, new List<object>()
+                {
+                    Create(ref ctx, blobReference).rootRuntimeData,
+                    ailmentBlob.root.applyValidationRandomAttribute == -1 ? 100 : ctx.attributes.GetCurrent(ailmentBlob.root.applyValidationRandomAttribute)
+                });
+        }
+
+        public bool Validate(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blob)
+        {
+            return AilmentBlob.Validate(ref ctx, blob);
+        }
+
+        public AilmentRuntime Create(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blob)
+        {
+            ref var blobValue = ref blob.Value;
+            var baseDmg = new float3x3();
+            baseDmg[blobValue.polyData.int2.x][blobValue.polyData.int2.y] = blobValue.polyData.f1;
+            
+            var ailment = new RawDmgAilment()
+            {
+                damage = baseDmg,
+            };
+
+            return new AilmentRuntime()
+            {
+                rootRuntimeData = blobValue.Create(ctx),
+                blob = blob,
+                ailment = ailment
+            };
+        }
+
+        public void OnFresh(ref AilmentCreatedContext ctx, in AilmentRuntime runtime)
+        {
+        }
+
+        public void OnTick(ref AilmentCreatedContext ctx, in AilmentRuntime runtime)
+        {
+            ctx.StoreDamage(((RawDmgAilment)runtime.ailment).damage*ctx.deltaTime);
+        }
+
+        public void OnExpired(ref AilmentCreatedContext ctx, in AilmentRuntime runtime)
+        {
+        }
+    }
 
     [PolymorphicStruct]
     public partial struct AddTagAilment : IAilment

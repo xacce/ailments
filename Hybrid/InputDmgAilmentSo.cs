@@ -17,7 +17,7 @@ namespace Src.PackageCandidate.GameReady.Ailments.Hybrid
     [Serializable]
     public partial struct InputDmgAilment : IAilment
     {
-        public int3x3 dmg;
+        public float3x3 dmg;
 
         public void OnFresh(ref AilmentConstructedContext ctx)
         {
@@ -43,7 +43,7 @@ namespace Src.PackageCandidate.GameReady.Ailments.Hybrid
 
         public bool TryConstruct(AilmentPreConstructedContext ctx, out ConstructedAilment constructed)
         {
-            var baseDmg = new int3x3();
+            var baseDmg = new float3x3();
             var x = ctx.inputDmgIndex.x;
             var y = ctx.inputDmgIndex.y;
             var cDmg = ctx.inputDmg[x][y] * percent;

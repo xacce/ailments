@@ -1,10 +1,11 @@
-﻿using Src.PackageCandidate.Attributer;
+﻿using Src.PackageCandidate.Ailments.Runtime;
+using Src.PackageCandidate.Attributer;
+using Sufferenger;
 using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
-using UnityEngine;
 
 namespace GameReady.Ailments.Runtime.Jobs
 {
@@ -21,6 +22,8 @@ namespace GameReady.Ailments.Runtime.Jobs
         [NativeDisableContainerSafetyRestriction]
         private NativeHashMap<int, float> _storedAttributes;
 
+        public float deltaTime;
+
         [BurstCompile]
         private void Execute(
             ref AilmentCarrier carrier,
@@ -28,15 +31,13 @@ namespace GameReady.Ailments.Runtime.Jobs
             DynamicBuffer<ActiveAilmentCounter> counter,
             DynamicBuffer<ApplyAilment> applies,
             DynamicBuffer<AttributeValue> attributeValues,
-#if DAMAGE_MODULE
             DynamicBuffer<DealDamage> dmgBuffer, //TODO remove me and call it inside queue
-#endif
             DynamicBuffer<AttributeDependencyElement> attributeDependency,
             Entity entity)
         {
             if (active.IsEmpty && applies.IsEmpty) return;
             _storedAttributes.Clear();
-            var ctx = new AilmentCreatedContext() { carrier = carrier, baseValues = _storedAttributes };
+            var ctx = new AilmentCreatedContext() { carrier = carrier, baseValues = _storedAttributes, deltaTime = deltaTime };
             for (int i = 0; i < applies.Length; i++)
             {
                 var apply = applies[i];
@@ -54,9 +55,8 @@ namespace GameReady.Ailments.Runtime.Jobs
             for (int i = active.Length - 1; i >= 0; i--)
             {
                 var activeAilment = active[i];
-                // ref var blob = ref ailment.blob.Value;
                 bool expired = false;
-                activeAilment.rootRuntimeData.duration--;
+                activeAilment.rootRuntimeData.duration -= deltaTime;
                 activeAilment.ailment.OnTick(ref ctx, activeAilment);
                 active[i] = activeAilment;
 
@@ -88,26 +88,25 @@ namespace GameReady.Ailments.Runtime.Jobs
 
             if (ctx.dmgStored)
             {
-#if DAMAGE_MODULE
-                var outDmg = new int3x3();
-                for (int i = 0; i < 3; i++)
-                {
-                    for (int j = 0; j < 3; j++)
-                    {
-                        if (dotDefensiveAttributes.TryGetValue(new int2(i, j), out var defensive))
-                        {
-                            var dmg = AttributesHelper.ApplyAddictive(ctx.accomulatedDmg[i][j], attributeValues.GetCurrent(defensive));
-                            if (dmg > 0)
-                            {
-                                // Debug.Log($"{ctx.accomulatedDmg[i][j]} -> {dmg}");
-                                outDmg[i][j] = (int)dmg;
-                            }
-                        }
-                    }
-                }
+                // var outDmg = new float3x3();
+                // for (int i = 0; i < 3; i++)
+                // {
+                //     for (int j = 0; j < 3; j++)
+                //     {
+                //         if (dotDefensiveAttributes.TryGetValue(new int2(i, j), out var defensive))
+                //         {
+                //             var dmg = AttributesHelper.ApplyAddictive(ctx.accomulatedDmg[i][j], attributeValues.GetCurrent(defensive));
+                //             if (dmg > 0)
+                //             {
+                //                 // Debug.Log($"{ctx.accomulatedDmg[i][j]} -> {dmg}");
+                //                 outDmg[i][j] = (int)dmg;
+                //             }
+                //         }
+                //     }
+                // }
 
-                dmgBuffer.Add(new DealDamage(outDmg));
-#endif
+                dmgBuffer.Add(DealDamage.CreateData(ctx.accomulatedDmg, CarryDamage.Tag.Armour | CarryDamage.Tag.Dot));
+
                 // Debug.Log("Has stored dmg");
             }
 

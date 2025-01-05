@@ -6,7 +6,6 @@ using UnityEngine;
 
 namespace Src.PackageCandidate.Ailments.Hybrid
 {
-
     [CreateAssetMenu(menuName = "Sufferenger/Ailments/Affect attrs ailment")]
     public class AffectAttributesAilmentSo : AilmentBakedSo
     {

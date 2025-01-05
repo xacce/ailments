@@ -1,11 +1,13 @@
 ﻿using System;
 using Core.Hybrid;
 using Src.PackageCandidate.Ailments.Hybrid;
+using Src.PackageCandidate.Ailments.Runtime;
 using Src.PackageCandidate.Attributer.Authoring;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Tables;
+using UnityEngine.Serialization;
 
 namespace GameReady.Ailments.Runtime
 {
@@ -26,7 +28,7 @@ namespace GameReady.Ailments.Runtime
         public AilmentBlob.ScaleMode defensiveMaxStacksScaleMode;
 
 
-        public uint durationTicks;
+        [FormerlySerializedAs("durationTicks")] public uint duration;
         public uint maxStacks;
         public uint applyStacks;
         public StackMode stackMode;
@@ -50,7 +52,7 @@ namespace GameReady.Ailments.Runtime
                 defensiveScaleMaxStacksAttributeIndex = scaleMaxStacksAttributeIndex ? scaleMaxStacksAttributeIndex.id : 0,
 
                 applyStacks = (int)applyStacks,
-                durationTicks = (int)durationTicks,
+                duration = (int)duration,
                 maxStacks = (int)maxStacks,
                 stackMode = stackMode,
                 durationScaleMode = durationScaleMode,
