@@ -16,7 +16,6 @@ namespace GameReady.Ailments.Runtime.Jobs
 #if DAMAGE_MODULE
         [ReadOnly] public NativeHashMap<int2, int> dotDefensiveAttributes;
 #endif
-
         // public EntityCommandBuffer.ParallelWriter ecb;
         // [ReadOnly] public NativeHashMap<int, AilmentDatabaseElement> db;
         [NativeDisableContainerSafetyRestriction]

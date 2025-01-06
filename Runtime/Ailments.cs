@@ -13,11 +13,18 @@ namespace Src.PackageCandidate.Ailments.Runtime
     public interface IAilment
     {
         public bool Validate(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreationContext ctx, BlobAssetReference<Src.PackageCandidate.Ailments.Runtime.AilmentBlob> blob);
-        public AilmentRuntime Create(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreationContext ctx, BlobAssetReference<Src.PackageCandidate.Ailments.Runtime.AilmentBlob> blob);
+
+        public AilmentRuntime Create(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreationContext ctx,
+            BlobAssetReference<Src.PackageCandidate.Ailments.Runtime.AilmentBlob> blob);
+
         public void OnFresh(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreatedContext ctx, in Src.PackageCandidate.Ailments.Runtime.AilmentRuntime rootRuntimeData);
         public void OnTick(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreatedContext ctx, in Src.PackageCandidate.Ailments.Runtime.AilmentRuntime rootRuntimeData);
         public void OnExpired(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreatedContext ctx, in Src.PackageCandidate.Ailments.Runtime.AilmentRuntime rootRuntimeData);
-        public string ToString(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreationContext ctx, BlobAssetReference<Src.PackageCandidate.Ailments.Runtime.AilmentBlob> blobReference);
+
+        public string Description(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreationContext ctx,
+            BlobAssetReference<Src.PackageCandidate.Ailments.Runtime.AilmentBlob> blobReference);
+
+        public string Title(BlobAssetReference<Src.PackageCandidate.Ailments.Runtime.AilmentBlob> blobReference);
     }
 
     public static class AilmentListExtension
@@ -27,7 +34,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
             var result = new List<string>();
             for (int i = 0; i < elements.Length; i++)
             {
-                result.Add(elements[i].ailment.ToString(ref ctx, elements[i].blob));
+                result.Add(elements[i].ailment.Description(ref ctx, elements[i].blob));
             }
 
             return result;
@@ -37,16 +44,21 @@ namespace Src.PackageCandidate.Ailments.Runtime
     [PolymorphicStruct]
     public partial struct AffectAttributesAilment : IAilment
     {
-        public string ToString(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blobReference)
+        public string Description(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blobReference)
         {
             ref var ailmentBlob = ref blobReference.Value;
             return LocalizationSettings.StringDatabase.GetLocalizedString(
-                ailmentBlob.root.title.table,
-                ailmentBlob.root.title.key, new List<object>()
+                ailmentBlob.root.description.table,
+                ailmentBlob.root.description.key, new List<object>()
                 {
                     Create(ref ctx, blobReference).rootRuntimeData,
                     ailmentBlob.root.applyValidationRandomAttribute == -1 ? 100 : ctx.attributes.GetCurrent(ailmentBlob.root.applyValidationRandomAttribute)
                 });
+        }
+
+        public string Title(BlobAssetReference<AilmentBlob> blobReference)
+        {
+            return LocalizationSettings.StringDatabase.GetLocalizedString(blobReference.Value.root.title.table, blobReference.Value.root.title.key);
         }
 
         public bool Validate(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blob)
@@ -93,13 +105,16 @@ namespace Src.PackageCandidate.Ailments.Runtime
     public partial struct RawDmgAilment : IAilment
     {
         public float3x3 damage;
-
-        public string ToString(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blobReference)
+        public string Title(BlobAssetReference<AilmentBlob> blobReference)
+        {
+            return LocalizationSettings.StringDatabase.GetLocalizedString(blobReference.Value.root.title.table, blobReference.Value.root.title.key);
+        }
+        public string Description(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blobReference)
         {
             ref var ailmentBlob = ref blobReference.Value;
             return LocalizationSettings.StringDatabase.GetLocalizedString(
-                ailmentBlob.root.title.table,
-                ailmentBlob.root.title.key, new List<object>()
+                ailmentBlob.root.description.table,
+                ailmentBlob.root.description.key, new List<object>()
                 {
                     Create(ref ctx, blobReference).rootRuntimeData,
                     ailmentBlob.root.applyValidationRandomAttribute == -1 ? 100 : ctx.attributes.GetCurrent(ailmentBlob.root.applyValidationRandomAttribute)
@@ -116,7 +131,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
             ref var blobValue = ref blob.Value;
             var baseDmg = new float3x3();
             baseDmg[blobValue.polyData.int2.x][blobValue.polyData.int2.y] = blobValue.polyData.f1;
-            
+
             var ailment = new RawDmgAilment()
             {
                 damage = baseDmg,
@@ -136,7 +151,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
 
         public void OnTick(ref AilmentCreatedContext ctx, in AilmentRuntime runtime)
         {
-            ctx.StoreDamage(((RawDmgAilment)runtime.ailment).damage*ctx.deltaTime);
+            ctx.StoreDamage(((RawDmgAilment)runtime.ailment).damage * ctx.deltaTime);
         }
 
         public void OnExpired(ref AilmentCreatedContext ctx, in AilmentRuntime runtime)
@@ -148,13 +163,16 @@ namespace Src.PackageCandidate.Ailments.Runtime
     public partial struct AddTagAilment : IAilment
     {
         public int tag;
-
-        public string ToString(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blobReference)
+        public string Title(BlobAssetReference<AilmentBlob> blobReference)
+        {
+            return LocalizationSettings.StringDatabase.GetLocalizedString(blobReference.Value.root.title.table, blobReference.Value.root.title.key);
+        }
+        public string Description(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blobReference)
         {
             ref var ailmentBlob = ref blobReference.Value;
             return LocalizationSettings.StringDatabase.GetLocalizedString(
-                ailmentBlob.root.title.table,
-                ailmentBlob.root.title.key, new List<object>()
+                ailmentBlob.root.description.table,
+                ailmentBlob.root.description.key, new List<object>()
                 {
                     Create(ref ctx, blobReference).rootRuntimeData,
                     ailmentBlob.root.applyValidationRandomAttribute == -1 ? 100 : ctx.attributes.GetCurrent(ailmentBlob.root.applyValidationRandomAttribute)

@@ -222,6 +222,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
     [InternalBufferCapacity(0)]
     public partial struct ActiveAilmentCounter : IBufferElementData
     {
+        public BlobAssetReference<AilmentBlob> blob;
         public int id;
         public int counter;
     }

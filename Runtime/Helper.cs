@@ -61,6 +61,7 @@ namespace GameReady.Ailments.Runtime
                     {
                         counter = 1,
                         id = stackGroupId,
+                        blob = apply.blob,
                     });
             }
             else
