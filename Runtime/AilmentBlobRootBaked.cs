@@ -48,8 +48,8 @@ namespace GameReady.Ailments.Runtime
                 scaleMaxStacksAttributeIndex = scaleMaxStacksAttributeIndex ? scaleMaxStacksAttributeIndex.id : 0,
                 applyValidationRandomAttribute = applyValidationRandomAttribute ? applyValidationRandomAttribute.id : -1,
 
-                defensiveScaleDurationAttributeIndex = scaleDurationAttributeIndex ? scaleDurationAttributeIndex.id : 0,
-                defensiveScaleMaxStacksAttributeIndex = scaleMaxStacksAttributeIndex ? scaleMaxStacksAttributeIndex.id : 0,
+                defensiveScaleDurationAttributeIndex = defensiveScaleDurationAttributeIndex ? scaleDurationAttributeIndex.id : 0,
+                defensiveScaleMaxStacksAttributeIndex = defensiveScaleMaxStacksAttributeIndex ? scaleMaxStacksAttributeIndex.id : 0,
 
                 applyStacks = (int)applyStacks,
                 duration = (int)duration,

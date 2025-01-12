@@ -1,10 +1,12 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Core.Runtime;
 using GameReady.Ailments.Runtime;
 using Src.PackageCandidate.Attributer;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace Src.PackageCandidate.Ailments.Runtime
 {
@@ -20,7 +22,9 @@ namespace Src.PackageCandidate.Ailments.Runtime
         public AilmentCarrier carrier;
         public float3x3 accomulatedDmg;
         public NativeHashMap<int, float> baseValues;
+        [MarshalAs(UnmanagedType.U1)]
         public bool dmgStored;
+        [MarshalAs(UnmanagedType.U1)]
         public bool attributesStored;
 
         public void AddBaseAttributeValue(int attributeIndex, float value)
@@ -170,6 +174,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void AffectDefensive(ref AilmentRootRuntimeData data, ref Root root, DynamicBuffer<AttributeValue> attrs)
         {
+            Debug.Log($"{data.stackGroupId}, {data.duration}, {root.defensiveScaleDurationAttributeIndex},{attrs.GetCurrent(root.defensiveScaleDurationAttributeIndex)}");
             data.duration = GetScaled(root.defensiveScaleDurationMode, data.duration, (int)attrs.GetCurrent(root.defensiveScaleDurationAttributeIndex));
             data.maxStacks =
                 GetScaled(root.defensiveScaleMaxStacksMode, data.maxStacks, (int)attrs.GetCurrent(root.defensiveScaleMaxStacksAttributeIndex));
@@ -205,7 +210,8 @@ namespace Src.PackageCandidate.Ailments.Runtime
 
     public static class AilmentElementExtender
     {
-        public static void ConstructAll(this INativeList<AilmentElement> ailments, ref AilmentCreationContext ctx, DynamicBuffer<ApplyAilment> to)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ConstructAll<T>(this T ailments, ref AilmentCreationContext ctx, DynamicBuffer<ApplyAilment> to) where T : INativeList<AilmentElement>
         {
             for (int i = 0; i < ailments.Length; i++)
             {
