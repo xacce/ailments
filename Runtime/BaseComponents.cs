@@ -174,7 +174,6 @@ namespace Src.PackageCandidate.Ailments.Runtime
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void AffectDefensive(ref AilmentRootRuntimeData data, ref Root root, DynamicBuffer<AttributeValue> attrs)
         {
-            Debug.Log($"{data.stackGroupId}, {data.duration}, {root.defensiveScaleDurationAttributeIndex},{attrs.GetCurrent(root.defensiveScaleDurationAttributeIndex)}");
             data.duration = GetScaled(root.defensiveScaleDurationMode, data.duration, (int)attrs.GetCurrent(root.defensiveScaleDurationAttributeIndex));
             data.maxStacks =
                 GetScaled(root.defensiveScaleMaxStacksMode, data.maxStacks, (int)attrs.GetCurrent(root.defensiveScaleMaxStacksAttributeIndex));
@@ -212,6 +211,18 @@ namespace Src.PackageCandidate.Ailments.Runtime
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ConstructAll<T>(this T ailments, ref AilmentCreationContext ctx, DynamicBuffer<ApplyAilment> to) where T : INativeList<AilmentElement>
+        {
+            for (int i = 0; i < ailments.Length; i++)
+            {
+                var ailment = ailments[i];
+                if (ailment.ailment.Validate(ref ctx, ailment.blob))
+                {
+                    to.Add(new ApplyAilment() { ailmentRuntime = ailments[i].ailment.Create(ref ctx, ailments[i].blob) });
+                }
+            }
+        }     
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ConstructAll<T>(this T ailments, ref AilmentCreationContext ctx, NativeList<ApplyAilment> to) where T : INativeList<AilmentElement>
         {
             for (int i = 0; i < ailments.Length; i++)
             {
