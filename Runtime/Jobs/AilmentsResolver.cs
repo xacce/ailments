@@ -21,6 +21,7 @@ namespace GameReady.Ailments.Runtime.Jobs
         [NativeDisableContainerSafetyRestriction]
         private NativeHashMap<int, float> _storedAttributes;
 
+        public AttributerRwContext attributerRwCtx;
         public float deltaTime;
 
         [BurstCompile]
@@ -29,18 +30,17 @@ namespace GameReady.Ailments.Runtime.Jobs
             DynamicBuffer<AilmentRuntime> active,
             DynamicBuffer<ActiveAilmentCounter> counter,
             DynamicBuffer<ApplyAilment> applies,
-            DynamicBuffer<AttributeValue> attributeValues,
             DynamicBuffer<DealDamage> dmgBuffer, //TODO remove me and call it inside queue
-            DynamicBuffer<AttributeDependencyElement> attributeDependency,
             Entity entity)
         {
             if (active.IsEmpty && applies.IsEmpty) return;
             _storedAttributes.Clear();
             var ctx = new AilmentCreatedContext() { carrier = carrier, baseValues = _storedAttributes, deltaTime = deltaTime };
+            var attributesRw = new AttributerRw<AttributerRwContext>(attributerRwCtx, entity);
             for (int i = 0; i < applies.Length; i++)
             {
                 var apply = applies[i];
-                AilmentBlob.AffectDefensive(ref apply.ailmentRuntime, attributeValues);
+                AilmentBlob.AffectDefensive(ref apply.ailmentRuntime, attributesRw.values);
                 var result = Helper.TryAddAilment(ref ctx, apply.ailmentRuntime, ref active, ref counter, out int ailmentIndex);
                 // if (result)
                 // {
@@ -74,7 +74,6 @@ namespace GameReady.Ailments.Runtime.Jobs
 
             if (ctx.attributesStored)
             {
-                var attributesRw = new AttributesRw(attributeValues, attributeDependency);
                 var en = ctx.baseValues.GetEnumerator();
                 while (en.MoveNext())
                 {
