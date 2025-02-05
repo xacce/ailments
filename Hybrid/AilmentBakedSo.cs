@@ -1,6 +1,8 @@
-﻿using Core.Hybrid;
+﻿using System;
+using Core.Hybrid;
 using GameReady.Ailments.Runtime;
 using Src.PackageCandidate.Ailments.Runtime;
+using UnityEngine;
 
 namespace Src.PackageCandidate.Ailments.Hybrid
 {

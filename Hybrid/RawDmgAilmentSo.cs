@@ -14,7 +14,6 @@ namespace Src.PackageCandidate.GameReady.Ailments.Hybrid
         [SerializeField] private AilmentBlobRootBaked root;
         [SerializeField] private int2 dmgIndex;
         [SerializeField] private float baseValue;
-
         public override int id => root.stackGroupId;
         public override Ailment ailment => new RawDmgAilment { };
         public override void Bake(ref AilmentBlob data, ref BlobBuilder blobBuilder)

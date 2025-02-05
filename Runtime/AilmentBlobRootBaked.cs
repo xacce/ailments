@@ -28,16 +28,19 @@ namespace GameReady.Ailments.Runtime
         public AilmentBlob.ScaleMode defensiveMaxStacksScaleMode;
 
 
-        [FormerlySerializedAs("durationTicks")] public uint duration;
+        [FormerlySerializedAs("durationTicks")]
+        public uint duration;
+
         public uint maxStacks;
         public uint applyStacks;
         public StackMode stackMode;
 
         [SerializeField] LocalizedString title = new LocalizedString();
         [SerializeField] LocalizedString description = new LocalizedString();
+        [SerializeField] private Sprite icon;
 
         [PickId(typeof(AilmentBakedSo))] public int stackGroupId;
-
+#if UNITY_EDITOR
         public void Bake(ref BlobBuilder builder, ref AilmentBlob.Root field)
         {
             field = new AilmentBlob.Root()
@@ -62,7 +65,9 @@ namespace GameReady.Ailments.Runtime
                 defensiveScaleMaxStacksMode = defensiveMaxStacksScaleMode,
                 title = title,
                 description = description,
+                icon = icon
             };
         }
+#endif
     }
 }

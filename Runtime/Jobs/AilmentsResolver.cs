@@ -1,4 +1,5 @@
-﻿using Src.PackageCandidate.Ailments.Runtime;
+﻿using Src.OneShoot;
+using Src.PackageCandidate.Ailments.Runtime;
 using Src.PackageCandidate.Attributer;
 using Sufferenger;
 using Unity.Burst;
@@ -28,6 +29,7 @@ namespace GameReady.Ailments.Runtime.Jobs
         [BurstCompile]
         private void Execute(
             ref AilmentCarrier carrier,
+            ref GameOneShootShortEvent evts,
             DynamicBuffer<AilmentRuntime> active,
             DynamicBuffer<ActiveAilmentCounter> counter,
             DynamicBuffer<ApplyAilment> applies,
@@ -43,6 +45,10 @@ namespace GameReady.Ailments.Runtime.Jobs
                 var apply = applies[i];
                 AilmentBlob.AffectDefensive(ref apply.ailmentRuntime, attributesRw.values);
                 var result = Helper.TryAddAilment(ref ctx, apply.ailmentRuntime, ref active, ref counter, out int ailmentIndex);
+                if (result)
+                {
+                    evts.Set(GameOneShootShortEventType.AilmentsUpdated);
+                }
                 // if (result)
                 // {
                 //     // ref var blob = ref apply.constructed.BlobAssetReference_0.Value;
@@ -65,6 +71,7 @@ namespace GameReady.Ailments.Runtime.Jobs
                     active.RemoveAt(i);
                     expired = true;
                     Helper.UpdateAilmentCount(ref counter, activeAilment.rootRuntimeData.stackGroupId, 1);
+                    evts.Set(GameOneShootShortEventType.AilmentsUpdated);
                 }
 
                 if (expired)
