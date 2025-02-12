@@ -221,7 +221,8 @@ namespace Src.PackageCandidate.Ailments.Runtime
                     to.Add(new ApplyAilment() { ailmentRuntime = ailments[i].ailment.Create(ref ctx, ailments[i].blob) });
                 }
             }
-        }     
+        }  
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ConstructAll<T>(this T ailments, ref AilmentCreationContext ctx, NativeList<ApplyAilment> to) where T : INativeList<AilmentElement>
         {

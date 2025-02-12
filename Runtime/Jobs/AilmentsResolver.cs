@@ -11,7 +11,6 @@ using Unity.Entities;
 namespace GameReady.Ailments.Runtime.Jobs
 {
     [BurstCompile]
-    [WithAll(typeof(Simulate))]
     [WithNone(typeof(IsDead))]
     internal partial struct AilmentResolverJob : IJobEntity, IJobEntityChunkBeginEnd
     {
