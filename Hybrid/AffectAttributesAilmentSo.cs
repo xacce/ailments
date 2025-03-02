@@ -1,4 +1,5 @@
-﻿using GameReady.Ailments.Runtime;
+﻿#if UNITY_EDITOR
+using GameReady.Ailments.Runtime;
 using Src.PackageCandidate.Ailments.Runtime;
 using Src.PackageCandidate.Attributer;
 using Unity.Entities;
@@ -22,3 +23,4 @@ namespace Src.PackageCandidate.Ailments.Hybrid
         }
     }
 }
+#endif

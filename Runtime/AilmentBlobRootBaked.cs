@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using Core.Hybrid;
 using Src.PackageCandidate.Ailments.Hybrid;
 using Src.PackageCandidate.Ailments.Runtime;
@@ -39,6 +40,7 @@ namespace GameReady.Ailments.Runtime
         [SerializeField] LocalizedString description = new LocalizedString();
         [SerializeField] private Sprite icon;
 
+        
         [PickId(typeof(AilmentBakedSo))] public int stackGroupId;
 #if UNITY_EDITOR
         public void Bake(ref BlobBuilder builder, ref AilmentBlob.Root field)
@@ -71,3 +73,4 @@ namespace GameReady.Ailments.Runtime
 #endif
     }
 }
+#endif

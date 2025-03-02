@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using Core.Hybrid;
 using GameReady.Ailments.Runtime;
 using Src.PackageCandidate.Ailments.Runtime;
@@ -12,3 +13,4 @@ namespace Src.PackageCandidate.Ailments.Hybrid
         public abstract Ailment ailment { get; }
     }
 }
+#endif
