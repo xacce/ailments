@@ -92,7 +92,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
             public int applyStacks;
             public StackMode stackMode;
             public int stackGroupId;
-            public UnityObjectRef<Sprite> icon;
+            // public UnityObjectRef<Sprite> icon;
             public LocalizationStringTableReferenceBaked title;
             public LocalizationStringTableReferenceBaked description;
         }

@@ -67,7 +67,7 @@ namespace GameReady.Ailments.Runtime
                 defensiveScaleMaxStacksMode = defensiveMaxStacksScaleMode,
                 title = title,
                 description = description,
-                icon = icon
+                // icon = icon
             };
         }
 #endif
