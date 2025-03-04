@@ -80,13 +80,10 @@ namespace Src.PackageCandidate.Ailments.Runtime
             public int applyStacksAttributeIndex;
             public ScaleMode applyStacksScaleMode;
             public int applyValidationRandomAttribute;
-
             public int defensiveScaleDurationAttributeIndex;
             public ScaleMode defensiveScaleDurationMode;
             public int defensiveScaleMaxStacksAttributeIndex;
             public ScaleMode defensiveScaleMaxStacksMode;
-
-
             public float duration;
             public int maxStacks;
             public int applyStacks;
