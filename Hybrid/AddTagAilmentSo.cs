@@ -18,6 +18,7 @@ namespace Src.PackageCandidate.Ailments.Hybrid
         public override void Bake(ref AilmentBlob data, ref BlobBuilder blobBuilder)
         {
             data.polyData.i1 = (int)tag;
+            data.polyData.value = 0;
             root.Bake(ref blobBuilder,ref data.root);
         }
     }

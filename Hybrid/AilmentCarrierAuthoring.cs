@@ -13,8 +13,8 @@ namespace Src.PackageCandidate.Ailments.Hybrid
             {
                 var e = GetEntity(TransformUsageFlags.None);
                 AddComponent<AilmentCarrier>(e);
-                AddBuffer<ActiveAilmentCounter>(e);
                 AddBuffer<ApplyAilment>(e);
+                AddBuffer<ActiveAilmentArrayMap>(e);
                 AddBuffer<AilmentRuntime>(e);
             }
         }

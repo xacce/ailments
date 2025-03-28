@@ -1,12 +1,15 @@
-﻿using Src.OneShoot;
+﻿using Core.Runtime.LatiosHashMap.Latios;
+using Src.OneShoot;
 using Src.PackageCandidate.Ailments.Runtime;
 using Src.PackageCandidate.Attributer;
+using Src.PackageCandidate.LogTest;
 using Sufferenger;
 using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace GameReady.Ailments.Runtime.Jobs
 {
@@ -29,30 +32,26 @@ namespace GameReady.Ailments.Runtime.Jobs
         private void Execute(
             ref AilmentCarrier carrier,
             ref GameOneShootShortEvent evts,
+            DynamicBuffer<ActiveAilmentArrayMap> _mapped,
             DynamicBuffer<AilmentRuntime> active,
-            DynamicBuffer<ActiveAilmentCounter> counter,
             DynamicBuffer<ApplyAilment> applies,
             DynamicBuffer<DealDamage> dmgBuffer, //TODO remove me and call it inside queue
             Entity entity)
         {
             if (active.IsEmpty && applies.IsEmpty) return;
             _storedAttributes.Clear();
+            var map = new DynamicHashMap<int, int2>(_mapped.Reinterpret<DynamicHashMap<int, int2>.Pair>());
             var ctx = new AilmentCreatedContext() { carrier = carrier, baseValues = _storedAttributes, deltaTime = deltaTime };
             var attributesRw = new AttributerRw<AttributerRwContext>(attributerRwCtx, entity);
             for (int i = 0; i < applies.Length; i++)
             {
                 var apply = applies[i];
                 AilmentBlob.AffectDefensive(ref apply.ailmentRuntime, attributesRw.values);
-                var result = Helper.TryAddAilment(ref ctx, apply.ailmentRuntime, ref active, ref counter, out int ailmentIndex);
+                var result = Helper.TryAddAilment(ref ctx, apply.ailmentRuntime, ref map, ref active, entity, out int ailmentIndex);
                 if (result)
                 {
                     evts.Set(GameOneShootShortEventType.AilmentsUpdated);
                 }
-                // if (result)
-                // {
-                //     // ref var blob = ref apply.constructed.BlobAssetReference_0.Value;
-                //     active[ailmentIndex].ailment.OnFresh(ref ctx,active[ailmentIndex]);
-                // }
             }
 
             applies.Clear();
@@ -69,7 +68,13 @@ namespace GameReady.Ailments.Runtime.Jobs
                 {
                     active.RemoveAt(i);
                     expired = true;
-                    Helper.UpdateAilmentCount(ref counter, activeAilment.rootRuntimeData.stackGroupId, 1);
+                    if (map.TryGetValue(activeAilment.rootRuntimeData.stackGroupId, out var stackGroupMapData))
+                    {
+                        stackGroupMapData.y--;
+                        map.AddOrSet(activeAilment.rootRuntimeData.stackGroupId, stackGroupMapData);
+                        GameDebug.Log("Ailment", $"Ailment {activeAilment.rootRuntimeData.stackGroupId} was expired");
+                    }
+
                     evts.Set(GameOneShootShortEventType.AilmentsUpdated);
                 }
 

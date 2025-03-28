@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Core.Runtime;
+using Core.Runtime.LatiosHashMap.Latios;
 using GameReady.Ailments.Runtime;
 using Src.PackageCandidate.Attributer;
 using Unity.Collections;
@@ -22,10 +23,8 @@ namespace Src.PackageCandidate.Ailments.Runtime
         public AilmentCarrier carrier;
         public float3x3 accomulatedDmg;
         public NativeHashMap<int, float> baseValues;
-        [MarshalAs(UnmanagedType.U1)]
-        public bool dmgStored;
-        [MarshalAs(UnmanagedType.U1)]
-        public bool attributesStored;
+        [MarshalAs(UnmanagedType.U1)] public bool dmgStored;
+        [MarshalAs(UnmanagedType.U1)] public bool attributesStored;
 
         public void AddBaseAttributeValue(int attributeIndex, float value)
         {
@@ -53,11 +52,10 @@ namespace Src.PackageCandidate.Ailments.Runtime
 
     public partial struct AilmentRootRuntimeData
     {
+        public int value;
         public int stackGroupId;
         public float duration;
         public int maxStacks;
-        public int split;
-        public StackMode stackMode;
     }
 
     public partial struct AilmentBlob
@@ -69,8 +67,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
             Flat,
             Override,
         }
-
-
+        
         public struct Root
         {
             public int scaleDurationAttributeIndex;
@@ -88,7 +85,9 @@ namespace Src.PackageCandidate.Ailments.Runtime
             public int maxStacks;
             public int applyStacks;
             public StackMode stackMode;
+
             public int stackGroupId;
+
             // public UnityObjectRef<Sprite> icon;
             public LocalizedStringTableReferenceBaked title;
             public LocalizedStringTableReferenceBaked description;
@@ -103,6 +102,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
             public int i2;
             public float f1;
             public float f2;
+            public int value;
         }
 
         // public partial struct GameData
@@ -177,15 +177,14 @@ namespace Src.PackageCandidate.Ailments.Runtime
                 GetScaled(root.defensiveScaleMaxStacksMode, data.maxStacks, (int)attrs.GetCurrent(root.defensiveScaleMaxStacksAttributeIndex));
         }
 
-        public AilmentRootRuntimeData Create(AilmentCreationContext ctx)
+        public AilmentRootRuntimeData Create(AilmentCreationContext ctx,int value)
         {
             return new AilmentRootRuntimeData()
             {
                 duration = GetScaled(root.durationScaleMode, root.duration, (int)ctx.attributes.GetCurrent(root.scaleDurationAttributeIndex)),
                 maxStacks = GetScaled(root.maxStacksScaleMode, root.maxStacks, (int)ctx.attributes.GetCurrent(root.scaleMaxStacksAttributeIndex)),
                 stackGroupId = root.stackGroupId,
-                stackMode = root.stackMode,
-                split = GetScaled(root.applyStacksScaleMode, root.applyStacks, (int)ctx.attributes.GetCurrent(root.applyStacksAttributeIndex)),
+                value = value,
             };
         }
     }
@@ -218,8 +217,8 @@ namespace Src.PackageCandidate.Ailments.Runtime
                     to.Add(new ApplyAilment() { ailmentRuntime = ailments[i].ailment.Create(ref ctx, ailments[i].blob) });
                 }
             }
-        }  
-        
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ConstructAll<T>(this T ailments, ref AilmentCreationContext ctx, NativeList<ApplyAilment> to) where T : INativeList<AilmentElement>
         {
@@ -234,14 +233,13 @@ namespace Src.PackageCandidate.Ailments.Runtime
         }
     }
 
-
     [InternalBufferCapacity(0)]
-    public partial struct ActiveAilmentCounter : IBufferElementData
+    public partial struct ActiveAilmentArrayMap : IBufferElementData
     {
-        public BlobAssetReference<AilmentBlob> blob;
-        public int id;
-        public int counter;
+        public DynamicHashMap<int, int2>.Pair pair;
     }
+
+
 
     [InternalBufferCapacity(0)]
     public partial struct ApplyAilment : IBufferElementData

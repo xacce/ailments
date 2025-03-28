@@ -17,10 +17,12 @@ namespace Src.PackageCandidate.GameReady.Ailments.Hybrid
         [SerializeField] private float baseValue;
         public override int id => root.stackGroupId;
         public override Ailment ailment => new RawDmgAilment { };
+
         public override void Bake(ref AilmentBlob data, ref BlobBuilder blobBuilder)
         {
             data.polyData.int2 = dmgIndex;
             data.polyData.f1 = baseValue;
+            data.polyData.value = (int)baseValue;
             root.Bake(ref blobBuilder, ref data.root);
         }
     }

@@ -72,7 +72,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
 
             return new AilmentRuntime()
             {
-                rootRuntimeData = blobValue.Create(ctx),
+                rootRuntimeData = blobValue.Create(ctx,blobValue.polyData.value),
                 blob = blob,
                 ailment = new AffectAttributesAilment { }
             };
@@ -105,10 +105,12 @@ namespace Src.PackageCandidate.Ailments.Runtime
     public partial struct RawDmgAilment : IAilment
     {
         public float3x3 damage;
+
         public string Title(BlobAssetReference<AilmentBlob> blobReference)
         {
             return LocalizationSettings.StringDatabase.GetLocalizedString(blobReference.Value.root.title.table, blobReference.Value.root.title.key);
         }
+
         public string Description(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blobReference)
         {
             ref var ailmentBlob = ref blobReference.Value;
@@ -137,9 +139,10 @@ namespace Src.PackageCandidate.Ailments.Runtime
                 damage = baseDmg,
             };
 
+            var s = (int3)ailment.damage.c0;
             return new AilmentRuntime()
             {
-                rootRuntimeData = blobValue.Create(ctx),
+                rootRuntimeData = blobValue.Create(ctx, blobValue.polyData.value),
                 blob = blob,
                 ailment = ailment
             };
@@ -163,10 +166,12 @@ namespace Src.PackageCandidate.Ailments.Runtime
     public partial struct AddTagAilment : IAilment
     {
         public int tag;
+
         public string Title(BlobAssetReference<AilmentBlob> blobReference)
         {
             return LocalizationSettings.StringDatabase.GetLocalizedString(blobReference.Value.root.title.table, blobReference.Value.root.title.key);
         }
+
         public string Description(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blobReference)
         {
             ref var ailmentBlob = ref blobReference.Value;
@@ -190,7 +195,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
 
             return new AilmentRuntime()
             {
-                rootRuntimeData = blobValue.Create(ctx),
+                rootRuntimeData = blobValue.Create(ctx, blobValue.polyData.value),
                 blob = blob,
                 ailment = new AddTagAilment { tag = blobValue.polyData.i1 }
             };

@@ -1,5 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
+using Core.Runtime.LatiosHashMap.Latios;
 using Src.PackageCandidate.Ailments.Runtime;
+using Src.PackageCandidate.LogTest;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -13,134 +15,77 @@ namespace GameReady.Ailments.Runtime
     {
         [BurstCompile]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryAddAilment(ref AilmentCreatedContext ctx, in AilmentRuntime apply, ref DynamicBuffer<AilmentRuntime> elements,
-            ref DynamicBuffer<ActiveAilmentCounter> counter, out int ailmentIndex)
+        public static bool TryAddAilment(
+            ref AilmentCreatedContext ctx,
+            in AilmentRuntime apply,
+            ref DynamicHashMap<int, int2> mapped,
+            ref DynamicBuffer<AilmentRuntime> elements,
+            Entity target, out int ailmentIndex)
         {
             ailmentIndex = -1;
             var stackGroupId = apply.rootRuntimeData.stackGroupId;
-            var count = GetAilmentCount(stackGroupId, ref counter, out var counterIndex);
             if (!(apply.rootRuntimeData.duration > 0)) return false;
-            switch (apply.rootRuntimeData.stackMode)
+            int insertIndex = -1;
+            int overrideIndex = -1;
+            int2 stackGroupMapData = int2.zero;
+            if (mapped.TryGetValue(stackGroupId, out stackGroupMapData))
             {
-                case StackMode.Override:
+                var currentStacksCount = stackGroupMapData.y;
+                if (currentStacksCount < apply.rootRuntimeData.maxStacks)
                 {
-                    if (count >= apply.rootRuntimeData.maxStacks)
+                    //Current ailment is not full, we can just add it
+                    insertIndex = stackGroupMapData.x + stackGroupMapData.y;
+                }
+                else
+                {
+                    for (int i = stackGroupMapData.x; i < stackGroupMapData.x + stackGroupMapData.y; i++)
                     {
-                        if (TryGetFirstIndexById(stackGroupId, ref elements, out ailmentIndex))
+                        var exists = elements[i];
+                        if (exists.rootRuntimeData.value < apply.rootRuntimeData.value)
                         {
-                            //todo refact this pls, less optimization
-                            elements[ailmentIndex].ailment.OnExpired(ref ctx, elements[ailmentIndex]);
-                            elements[ailmentIndex] = apply;
-                            elements[ailmentIndex].ailment.OnFresh(ref ctx, elements[ailmentIndex]);
-                            return true;
+                            //We have weak ailment , just override it
+                            overrideIndex = i;
+                            break;
                         }
                     }
 
-                    ailmentIndex = elements.Length;
-                    elements.Add(apply);
-                    elements[ailmentIndex].ailment.OnFresh(ref ctx, elements[ailmentIndex]);
-                    break;
-                }
-                case StackMode.Discard:
-                    if (count >= apply.rootRuntimeData.maxStacks) return false;
-                    ailmentIndex = elements.Length;
-                    elements.Add(apply);
-                    break;
-            }
-
-            if (ailmentIndex == -1)
-            {
-                Debug.Log("Less");
-                return false;
-            }
-
-            if (counterIndex == -1)
-            {
-                counter.Add(
-                    new ActiveAilmentCounter()
+                    if (overrideIndex == -1)
                     {
-                        counter = 1,
-                        id = stackGroupId,
-                        blob = apply.blob,
-                    });
+                        //Stacks is full and no weaks ailments, skip
+                        return false;
+                    }
+                }
             }
-            else
+
+            if (insertIndex == -1 && overrideIndex == -1)
             {
-                var counterAilment = counter[counterIndex];
-                counterAilment.counter++;
-                counter[counterIndex] = counterAilment;
+                //Its new ailment, just append and map
+                var index = elements.Length;
+                elements.Add(apply);
+                apply.ailment.OnFresh(ref ctx, elements[index]);
+                mapped.AddOrSet(stackGroupId, new int2(index, 1));
+                GameDebug.Log("Ailment", $"New ailment {apply.rootRuntimeData.stackGroupId} was added to {target}");
             }
+            else if (insertIndex != -1)
+            {
+                elements.Insert(insertIndex, apply);
+                apply.ailment.OnFresh(ref ctx, elements[insertIndex]);
+                stackGroupMapData.y++;
+                mapped.AddOrSet(stackGroupId, stackGroupMapData);
+                GameDebug.Log("Ailment", $"New ailment {apply.rootRuntimeData.stackGroupId} was inserted to {target}");
+            }
+            else if (overrideIndex != -1)
+            {
+                var overrideAilment = elements[overrideIndex];
+                overrideAilment.ailment.OnExpired(ref ctx, overrideAilment);
+                elements[overrideIndex] = apply;
+                apply.ailment.OnFresh(ref ctx, overrideAilment);
+                GameDebug.Log("Ailment", $"New ailment {apply.rootRuntimeData.stackGroupId} was override to {target}");
+            }
+
 
             // ref var activeAilment = ref elements.ElementAt(ailmentIndex);
             return true;
-        }
-
-        [BurstCompile]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetAilmentCount(int ailmentId, ref DynamicBuffer<ActiveAilmentCounter> counter, out int index)
-        {
-            for (var i = 0; i < counter.Length; i++)
-            {
-                var c = counter[i];
-                if (c.id == ailmentId)
-                {
-                    // c.counter++;
-                    // counter[i] = c;
-                    index = i;
-                    return c.counter;
-                }
-            }
-
-            index = -1;
-            return 0;
-        }
-
-        [BurstCompile]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void UpdateAilmentCount(ref DynamicBuffer<ActiveAilmentCounter> counter, int ailmentId, int decr)
-        {
-            for (var i = 0; i < counter.Length; i++)
-            {
-                var c = counter[i];
-                if (c.id == ailmentId)
-                {
-                    c.counter -= decr;
-                    counter[i] = c;
-                    return;
-                }
-            }
-        }
-
-
-        [BurstCompile]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryGetFirstIndexById(int ailmentId, ref DynamicBuffer<AilmentRuntime> elements, out int index)
-        {
-            for (var i = 0; i < elements.Length; i++)
-            {
-                var c = elements[i];
-                if (c.rootRuntimeData.stackGroupId == ailmentId)
-                {
-                    index = i;
-                    return true;
-                }
-            }
-
-            index = -1;
-            return false;
-        }
-
-        [BurstCompile]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetAilmentCount(int ailmentId, ref DynamicBuffer<ActiveAilmentCounter> counter)
-        {
-            for (var i = 0; i < counter.Length; i++)
-            {
-                var c = counter[i];
-                if (c.id == ailmentId) return c.counter;
-            }
-
-            return 0;
         }
     }
 }
