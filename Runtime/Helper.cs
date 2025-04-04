@@ -34,7 +34,7 @@ namespace GameReady.Ailments.Runtime
                 if (currentStacksCount < apply.rootRuntimeData.maxStacks)
                 {
                     //Current ailment is not full, we can just add it
-                    insertIndex = stackGroupMapData.x + stackGroupMapData.y;
+                    insertIndex = stackGroupMapData.x;
                 }
                 else
                 {
