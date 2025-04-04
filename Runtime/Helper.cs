@@ -20,7 +20,7 @@ namespace GameReady.Ailments.Runtime
             in AilmentRuntime apply,
             ref DynamicHashMap<int, int2> mapped,
             ref DynamicBuffer<AilmentRuntime> elements,
-            Entity target, out int ailmentIndex)
+            in Entity target, out int ailmentIndex)
         {
             ailmentIndex = -1;
             var stackGroupId = apply.rootRuntimeData.stackGroupId;
