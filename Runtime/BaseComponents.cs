@@ -236,7 +236,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
     [InternalBufferCapacity(0)]
     public partial struct ActiveAilmentArrayMap : IBufferElementData
     {
-        public DynamicHashMap<int, int2>.Pair pair;
+        public DynamicHashMap<int, int>.Pair pair;
     }
 
 
