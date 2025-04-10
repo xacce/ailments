@@ -29,16 +29,18 @@ namespace Src.PackageCandidate.Ailments.Runtime
 
     public static class AilmentListExtension
     {
-        public static List<string> ToStringArray(this INativeList<AilmentElement> elements, ref AilmentCreationContext ctx)
+        public static string[] ToStringArray(this INativeList<AilmentElement> elements, ref AilmentCreationContext ctx)
         {
-            var result = new List<string>();
+            var result = new string[elements.Length];
             for (int i = 0; i < elements.Length; i++)
             {
-                result.Add(elements[i].ailment.Description(ref ctx, elements[i].blob));
+                var e = elements[i];
+                result[i] = e.ailment.Description(ref ctx, e.blob);
             }
 
             return result;
         }
+        
     }
 
     [PolymorphicStruct]
@@ -72,7 +74,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
 
             return new AilmentRuntime()
             {
-                rootRuntimeData = blobValue.Create(ctx,blobValue.polyData.value),
+                rootRuntimeData = blobValue.Create(ctx, blobValue.polyData.value),
                 blob = blob,
                 ailment = new AffectAttributesAilment { }
             };
