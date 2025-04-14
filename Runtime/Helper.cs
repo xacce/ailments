@@ -29,18 +29,18 @@ namespace GameReady.Ailments.Runtime
             // bool isNew = true;
             int overrideIndex = -1;
             int currentStacksCount = 0;
-            GameDebug.Log("Ailment", $"Try to find stack group {stackGroupId}", target);
+            GameDebug.Spam("Ailment", $"Try to find stack group {stackGroupId}", target);
             if (count.TryGetValue(stackGroupId, out  currentStacksCount))
             {
-                GameDebug.Log("Ailment", $"Stack group found {stackGroupId}, max stacks: {apply.rootRuntimeData.maxStacks}, current stacks: {currentStacksCount}", target);
+                GameDebug.Spam("Ailment", $"Stack group found {stackGroupId}, max stacks: {apply.rootRuntimeData.maxStacks}, current stacks: {currentStacksCount}", target);
                 if (currentStacksCount == 0 && apply.rootRuntimeData.maxStacks > 0)
                 {
-                    GameDebug.Log("Ailment", $"Its new* ailment, we need update map - just append ", target);
+                    GameDebug.Spam("Ailment", $"Its new* ailment, we need update map - just append ", target);
                 }
                 else if (currentStacksCount < apply.rootRuntimeData.maxStacks)
                 {
                     //Current ailment is not full, we can just add it
-                    GameDebug.Log("Ailment", $"Is just inserting", target);
+                    GameDebug.Spam("Ailment", $"Is just inserting", target);
                     // insertIndex = stackGroupMapData.x;
                 }
                 else
@@ -52,7 +52,7 @@ namespace GameReady.Ailments.Runtime
                         if (exists.rootRuntimeData.stackGroupId==stackGroupId && exists.rootRuntimeData.value < apply.rootRuntimeData.value)
                         {
                             //We have weak ailment , just override it
-                            GameDebug.Log("Ailment", $"Is just override", target);
+                            GameDebug.Spam("Ailment", $"Is just override", target);
                             overrideIndex = i;
                             break;
                         }
@@ -61,7 +61,7 @@ namespace GameReady.Ailments.Runtime
                     if (overrideIndex == -1)
                     {
                         //Stacks is full and no weaks ailments, skip
-                        GameDebug.Log("Ailment", $"Is just skip", target);
+                        GameDebug.Spam("Ailment", $"Is just skip", target);
                         return false;
                     }
                 }
@@ -72,25 +72,25 @@ namespace GameReady.Ailments.Runtime
                 //Its new ailment, just append and map
                 var index = elements.Length;
                 currentStacksCount++;
-                GameDebug.Log("Ailment", $"New ailment. Appliend new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
+                GameDebug.Spam("Ailment", $"New ailment. Appliend new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
                 elements.Add(apply);
-                GameDebug.Log("Ailment", $"New ailment. Freshing new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
+                GameDebug.Spam("Ailment", $"New ailment. Freshing new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
                 apply.ailment.OnFresh(ref ctx, elements[index]);
-                GameDebug.Log("Ailment", $"New ailment. Update map new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
+                GameDebug.Spam("Ailment", $"New ailment. Update map new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
                 count.AddOrSet(stackGroupId, currentStacksCount);
-                GameDebug.Log("Ailment", $"New ailment. New ailment {apply.rootRuntimeData.stackGroupId} was added to {target}");
+                GameDebug.Spam("Ailment", $"New ailment. New ailment {apply.rootRuntimeData.stackGroupId} was added to {target}");
             }
             else if (overrideIndex != -1)
             {
-                GameDebug.Log("Ailment", $"Override ailment.New ailment {apply.rootRuntimeData.stackGroupId} to {target}");
+                GameDebug.Spam("Ailment", $"Override ailment.New ailment {apply.rootRuntimeData.stackGroupId} to {target}");
                 var overrideAilment = elements[overrideIndex];
-                GameDebug.Log("Ailment", $"Override ailment.Expiring new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
+                GameDebug.Spam("Ailment", $"Override ailment.Expiring new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
                 overrideAilment.ailment.OnExpired(ref ctx, overrideAilment);
-                GameDebug.Log("Ailment", $"Override ailment.Updating new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
+                GameDebug.Spam("Ailment", $"Override ailment.Updating new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
                 elements[overrideIndex] = apply;
-                GameDebug.Log("Ailment", $"Override ailment.Freshing new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
+                GameDebug.Spam("Ailment", $"Override ailment.Freshing new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
                 apply.ailment.OnFresh(ref ctx, overrideAilment);
-                GameDebug.Log("Ailment", $"New ailment {apply.rootRuntimeData.stackGroupId} was override to {target}");
+                GameDebug.Spam("Ailment", $"New ailment {apply.rootRuntimeData.stackGroupId} was override to {target}");
             }
 
 

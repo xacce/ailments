@@ -39,24 +39,24 @@ namespace GameReady.Ailments.Runtime.Jobs
             Entity entity)
         {
             if (active.IsEmpty && applies.IsEmpty) return;
-            GameDebug.Log("Ailment", $"Has new incoming ailments", entity);
+            GameDebug.Spam("Ailment", $"Has new incoming ailments", entity);
             _storedAttributes.Clear();
-            GameDebug.Log("Ailment", $"Create hash map", entity);
+            GameDebug.Spam("Ailment", $"Create hash map", entity);
             var map = new DynamicHashMap<int, int>(_mapped.Reinterpret<DynamicHashMap<int, int>.Pair>());
-            GameDebug.Log("Ailment", $"Create context", entity);
+            GameDebug.Spam("Ailment", $"Create context", entity);
             var ctx = new AilmentCreatedContext() { carrier = carrier, baseValues = _storedAttributes, deltaTime = deltaTime };
-            GameDebug.Log("Ailment", $"Create attributes", entity);
+            GameDebug.Spam("Ailment", $"Create attributes", entity);
             var attributesRw = new AttributerRw<AttributerRwContext>(attributerRwCtx, entity);
             for (int i = 0; i < applies.Length; i++)
             {
-                GameDebug.Log("Ailment", $"Resolve: {i} incoming ailment", entity);
+                GameDebug.Spam("Ailment", $"Resolve: {i} incoming ailment", entity);
                 var apply = applies[i];
-                GameDebug.Log("Ailment", $"Apply defensive layers for {i} incoming ailment", entity);
+                GameDebug.Spam("Ailment", $"Apply defensive layers for {i} incoming ailment", entity);
                 AilmentBlob.AffectDefensive(ref apply.ailmentRuntime, attributesRw.values);
 
-                GameDebug.Log("Ailment", $"Trying to add to storage {i} incoming ailment", entity);
+                GameDebug.Spam("Ailment", $"Trying to add to storage {i} incoming ailment", entity);
                 var result = Helper.TryAddAilment(ref ctx, apply.ailmentRuntime, ref map, ref active, entity, out int ailmentIndex);
-                GameDebug.Log("Ailment", $"Add result : {result} for {i} incoming ailment", entity);
+                GameDebug.Spam("Ailment", $"Add result : {result} for {i} incoming ailment", entity);
                 if (result)
                 {
                     evts.Set(GameOneShootShortEventType.AilmentsUpdated);
@@ -89,7 +89,7 @@ namespace GameReady.Ailments.Runtime.Jobs
                             map.AddOrSet(activeAilment.rootRuntimeData.stackGroupId, stackGroupCount);
                         }
 
-                        GameDebug.Log("Ailment", $"Ailment {activeAilment.rootRuntimeData.stackGroupId} was expired");
+                        GameDebug.Spam("Ailment", $"Ailment {activeAilment.rootRuntimeData.stackGroupId} was expired");
                     }
 
                     evts.Set(GameOneShootShortEventType.AilmentsUpdated);
