@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Core.Runtime;
 using Core.Runtime.LatiosHashMap.Latios;
@@ -67,7 +68,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
             Flat,
             Override,
         }
-        
+
         public struct Root
         {
             public int scaleDurationAttributeIndex;
@@ -177,7 +178,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
                 GetScaled(root.defensiveScaleMaxStacksMode, data.maxStacks, (int)attrs.GetCurrent(root.defensiveScaleMaxStacksAttributeIndex));
         }
 
-        public AilmentRootRuntimeData Create(AilmentCreationContext ctx,int value)
+        public AilmentRootRuntimeData Create(AilmentCreationContext ctx, int value)
         {
             return new AilmentRootRuntimeData()
             {
@@ -233,12 +234,33 @@ namespace Src.PackageCandidate.Ailments.Runtime
         }
     }
 
+    public struct AilmentInfo : IEquatable<AilmentInfo>
+    {
+        public int stacksCount;
+        public float duration;
+        public BlobAssetReference<AilmentBlob> blob;
+
+        public bool Equals(AilmentInfo other)
+        {
+            return blob.Value.root.stackGroupId.Equals(other.blob.Value.root.stackGroupId);
+        }
+
+        public override bool Equals(object obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override int GetHashCode()
+        {
+            return blob.GetHashCode();
+        }
+    }
+
     [InternalBufferCapacity(0)]
     public partial struct ActiveAilmentArrayMap : IBufferElementData
     {
-        public DynamicHashMap<int, int>.Pair pair;
+        public DynamicHashMap<int, AilmentInfo>.Pair pair;
     }
-
 
 
     [InternalBufferCapacity(0)]

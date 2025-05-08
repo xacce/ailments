@@ -18,7 +18,7 @@ namespace GameReady.Ailments.Runtime
         public static bool TryAddAilment(
             ref AilmentCreatedContext ctx,
             in AilmentRuntime apply,
-            ref DynamicHashMap<int, int> count,
+            ref DynamicHashMap<int, AilmentInfo> count,
             ref DynamicBuffer<AilmentRuntime> elements,
             in Entity target, out int ailmentIndex)
         {
@@ -28,16 +28,16 @@ namespace GameReady.Ailments.Runtime
             // int insertIndex = -1;
             // bool isNew = true;
             int overrideIndex = -1;
-            int currentStacksCount = 0;
+            AilmentInfo currentStacksCount = default;
             GameDebug.Spam("Ailment", $"Try to find stack group {stackGroupId}", target);
             if (count.TryGetValue(stackGroupId, out  currentStacksCount))
             {
                 GameDebug.Spam("Ailment", $"Stack group found {stackGroupId}, max stacks: {apply.rootRuntimeData.maxStacks}, current stacks: {currentStacksCount}", target);
-                if (currentStacksCount == 0 && apply.rootRuntimeData.maxStacks > 0)
+                if (currentStacksCount.stacksCount == 0 && apply.rootRuntimeData.maxStacks > 0)
                 {
                     GameDebug.Spam("Ailment", $"Its new* ailment, we need update map - just append ", target);
                 }
-                else if (currentStacksCount < apply.rootRuntimeData.maxStacks)
+                else if (currentStacksCount.stacksCount < apply.rootRuntimeData.maxStacks)
                 {
                     //Current ailment is not full, we can just add it
                     GameDebug.Spam("Ailment", $"Is just inserting", target);
@@ -71,7 +71,8 @@ namespace GameReady.Ailments.Runtime
             {
                 //Its new ailment, just append and map
                 var index = elements.Length;
-                currentStacksCount++;
+                currentStacksCount.stacksCount++;
+                currentStacksCount.blob = apply.blob;
                 GameDebug.Spam("Ailment", $"New ailment. Appliend new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
                 elements.Add(apply);
                 GameDebug.Spam("Ailment", $"New ailment. Freshing new ailment {apply.rootRuntimeData.stackGroupId} to {target}");

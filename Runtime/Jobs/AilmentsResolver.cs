@@ -42,7 +42,7 @@ namespace GameReady.Ailments.Runtime.Jobs
             GameDebug.Spam("Ailment", $"Has new incoming ailments", entity);
             _storedAttributes.Clear();
             GameDebug.Spam("Ailment", $"Create hash map", entity);
-            var map = new DynamicHashMap<int, int>(_mapped.Reinterpret<DynamicHashMap<int, int>.Pair>());
+            var map = new DynamicHashMap<int, AilmentInfo>(_mapped.Reinterpret<DynamicHashMap<int, AilmentInfo>.Pair>());
             GameDebug.Spam("Ailment", $"Create context", entity);
             var ctx = new AilmentCreatedContext() { carrier = carrier, baseValues = _storedAttributes, deltaTime = deltaTime };
             GameDebug.Spam("Ailment", $"Create attributes", entity);
@@ -79,13 +79,17 @@ namespace GameReady.Ailments.Runtime.Jobs
                     expired = true;
                     if (map.TryGetValue(activeAilment.rootRuntimeData.stackGroupId, out var stackGroupCount))
                     {
-                        stackGroupCount--;
-                        if (stackGroupCount <= 0)
+                        stackGroupCount.stacksCount--;
+                        if (stackGroupCount.stacksCount <= 0)
                         {
                             map.Remove(activeAilment.rootRuntimeData.stackGroupId);
                         }
                         else
                         {
+                            if (activeAilment.rootRuntimeData.duration > stackGroupCount.duration)
+                            {
+                                stackGroupCount.duration = activeAilment.rootRuntimeData.duration;
+                            }
                             map.AddOrSet(activeAilment.rootRuntimeData.stackGroupId, stackGroupCount);
                         }
 
