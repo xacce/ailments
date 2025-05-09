@@ -72,6 +72,10 @@ namespace GameReady.Ailments.Runtime
                 //Its new ailment, just append and map
                 var index = elements.Length;
                 currentStacksCount.stacksCount++;
+                if(currentStacksCount.duration<apply.rootRuntimeData.duration)
+                {
+                    currentStacksCount.duration = apply.rootRuntimeData.duration;
+                }
                 currentStacksCount.blob = apply.blob;
                 GameDebug.Spam("Ailment", $"New ailment. Appliend new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
                 elements.Add(apply);
@@ -91,6 +95,13 @@ namespace GameReady.Ailments.Runtime
                 elements[overrideIndex] = apply;
                 GameDebug.Spam("Ailment", $"Override ailment.Freshing new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
                 apply.ailment.OnFresh(ref ctx, overrideAilment);
+                currentStacksCount.stacksCount++;
+                currentStacksCount.blob = apply.blob;
+                if(currentStacksCount.duration<apply.rootRuntimeData.duration)
+                {
+                    currentStacksCount.duration = apply.rootRuntimeData.duration;
+                }
+                count.AddOrSet(stackGroupId, currentStacksCount);
                 GameDebug.Spam("Ailment", $"New ailment {apply.rootRuntimeData.stackGroupId} was override to {target}");
             }
 

@@ -38,9 +38,11 @@ namespace GameReady.Ailments.Runtime
 
         [SerializeField] LocalizedString title = new LocalizedString();
         [SerializeField] LocalizedString description = new LocalizedString();
+        [SerializeField] LocalizedString tooltipDescription = new LocalizedString();
+        [SerializeField] string style = String.Empty;
         [SerializeField] private Sprite icon;
 
-        
+
         [PickId(typeof(AilmentBakedSo))] public int stackGroupId;
 #if UNITY_EDITOR
         public void Bake(ref BlobBuilder builder, ref AilmentBlob.Root field)
@@ -67,8 +69,9 @@ namespace GameReady.Ailments.Runtime
                 defensiveScaleMaxStacksMode = defensiveMaxStacksScaleMode,
                 title = title,
                 description = description,
-                // icon = icon
+                tooltipDescription = tooltipDescription,
             };
+            builder.AllocateString(ref field.style, style);
         }
 #endif
     }

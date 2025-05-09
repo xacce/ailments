@@ -88,10 +88,10 @@ namespace Src.PackageCandidate.Ailments.Runtime
             public StackMode stackMode;
 
             public int stackGroupId;
-
-            // public UnityObjectRef<Sprite> icon;
+            public BlobString style;
             public LocalizedStringTableReferenceBaked title;
             public LocalizedStringTableReferenceBaked description;
+            public LocalizedStringTableReferenceBaked tooltipDescription;
         }
 
         public struct PolyData
