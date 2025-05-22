@@ -23,6 +23,12 @@ namespace GameReady.Ailments.Runtime
         public AilmentBlob.ScaleMode applySacksScaleMode;
         public AttributeSo applyValidationRandomAttribute;
 
+        public AilmentBlob.ScaleMode effectivityScaleMode;
+        public AttributeSo effectivityAttribute;
+
+        public AilmentBlob.ScaleMode defensiveEffectivityScaleMode;
+        public AttributeSo defensiveEffectivityAttribute;
+
         public AttributeSo defensiveScaleDurationAttributeIndex;
         public AilmentBlob.ScaleMode defensiveDurationScaleMode;
         public AttributeSo defensiveScaleMaxStacksAttributeIndex;
@@ -33,6 +39,7 @@ namespace GameReady.Ailments.Runtime
         public uint duration;
 
         public uint maxStacks;
+        public float baseEffectivity;
         public uint applyStacks;
         public StackMode stackMode;
 
@@ -54,10 +61,13 @@ namespace GameReady.Ailments.Runtime
                 scaleDurationAttributeIndex = scaleDurationAttributeIndex ? scaleDurationAttributeIndex.id : 0,
                 scaleMaxStacksAttributeIndex = scaleMaxStacksAttributeIndex ? scaleMaxStacksAttributeIndex.id : 0,
                 applyValidationRandomAttribute = applyValidationRandomAttribute ? applyValidationRandomAttribute.id : -1,
-
+                effectivityAttributeIndex = effectivityAttribute ? effectivityAttribute.id : 0,
+                effectivityScaleMode = effectivityScaleMode,
+                defensiveEffectivityAttributeIndex = defensiveEffectivityAttribute ? defensiveEffectivityAttribute.id : 0,
+                defensiveEffectivityMode = defensiveEffectivityScaleMode,
+                baseEffectivity = baseEffectivity,
                 defensiveScaleDurationAttributeIndex = defensiveScaleDurationAttributeIndex ? defensiveScaleDurationAttributeIndex.id : 0,
                 defensiveScaleMaxStacksAttributeIndex = defensiveScaleMaxStacksAttributeIndex ? defensiveScaleMaxStacksAttributeIndex.id : 0,
-
                 applyStacks = (int)applyStacks,
                 duration = (int)duration,
                 maxStacks = (int)maxStacks,

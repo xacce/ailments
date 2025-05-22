@@ -13,7 +13,7 @@ namespace GameReady.Ailments.Runtime
     [BurstCompile]
     public static class Helper
     {
-        [BurstCompile]
+      
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryAddAilment(
             ref AilmentCreatedContext ctx,
@@ -77,10 +77,11 @@ namespace GameReady.Ailments.Runtime
                     currentStacksCount.duration = apply.rootRuntimeData.duration;
                 }
                 currentStacksCount.blob = apply.blob;
+                GameDebug.Spam("Ailment", $"New ailment. Freshing new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
+                apply.ailment.OnFresh(ref ctx, apply);
                 GameDebug.Spam("Ailment", $"New ailment. Appliend new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
                 elements.Add(apply);
-                GameDebug.Spam("Ailment", $"New ailment. Freshing new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
-                apply.ailment.OnFresh(ref ctx, elements[index]);
+        
                 GameDebug.Spam("Ailment", $"New ailment. Update map new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
                 count.AddOrSet(stackGroupId, currentStacksCount);
                 GameDebug.Spam("Ailment", $"New ailment. New ailment {apply.rootRuntimeData.stackGroupId} was added to {target}");
@@ -91,10 +92,10 @@ namespace GameReady.Ailments.Runtime
                 var overrideAilment = elements[overrideIndex];
                 GameDebug.Spam("Ailment", $"Override ailment.Expiring new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
                 overrideAilment.ailment.OnExpired(ref ctx, overrideAilment);
+                GameDebug.Spam("Ailment", $"Override ailment.Freshing new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
+                apply.ailment.OnFresh(ref ctx, apply);
                 GameDebug.Spam("Ailment", $"Override ailment.Updating new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
                 elements[overrideIndex] = apply;
-                GameDebug.Spam("Ailment", $"Override ailment.Freshing new ailment {apply.rootRuntimeData.stackGroupId} to {target}");
-                apply.ailment.OnFresh(ref ctx, overrideAilment);
                 currentStacksCount.stacksCount++;
                 currentStacksCount.blob = apply.blob;
                 if(currentStacksCount.duration<apply.rootRuntimeData.duration)

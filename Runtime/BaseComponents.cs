@@ -24,20 +24,20 @@ namespace Src.PackageCandidate.Ailments.Runtime
         public AilmentCarrier carrier;
         public float3x3 accomulatedDmg;
         public NativeHashMap<int, float> baseValues;
-        [MarshalAs(UnmanagedType.U1)] public bool dmgStored;
-        [MarshalAs(UnmanagedType.U1)] public bool attributesStored;
+        public byte dmgStored;
+        public byte attributesStored;
 
         public void AddBaseAttributeValue(int attributeIndex, float value)
         {
             if (!baseValues.ContainsKey(attributeIndex)) baseValues[attributeIndex] = value;
             else baseValues[attributeIndex] += value;
-            attributesStored = true;
+            attributesStored = 1;
         }
 
         public void StoreDamage(float3x3 dmg)
         {
             accomulatedDmg += dmg;
-            dmgStored = true;
+            dmgStored = 1;
         }
     }
 
@@ -56,6 +56,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
         public int value;
         public int stackGroupId;
         public float duration;
+        public float effectivity;
         public int maxStacks;
     }
 
@@ -82,8 +83,16 @@ namespace Src.PackageCandidate.Ailments.Runtime
             public ScaleMode defensiveScaleDurationMode;
             public int defensiveScaleMaxStacksAttributeIndex;
             public ScaleMode defensiveScaleMaxStacksMode;
+
+            public int effectivityAttributeIndex;
+            public ScaleMode effectivityScaleMode;
+
+            public int defensiveEffectivityAttributeIndex;
+            public ScaleMode defensiveEffectivityMode;
+
             public float duration;
             public int maxStacks;
+            public float baseEffectivity;
             public int applyStacks;
             public StackMode stackMode;
 
@@ -153,7 +162,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
                 case ScaleMode.Flat:
                     return math.max((origin + mod), 0);
                 case ScaleMode.Multiplier:
-                    return (float)AttributesHelper.ApplyAddictive((float)origin, (float)mod);
+                    return math.max(AttributesHelper.ApplyAddictive(origin, mod), 0);
                 case ScaleMode.Override:
                     return math.max((mod), 0);
                 case ScaleMode.Nothing:
@@ -173,17 +182,35 @@ namespace Src.PackageCandidate.Ailments.Runtime
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void AffectDefensive(ref AilmentRootRuntimeData data, ref Root root, DynamicBuffer<AttributeValue> attrs)
         {
-            data.duration = GetScaled(root.defensiveScaleDurationMode, data.duration, (int)attrs.GetCurrent(root.defensiveScaleDurationAttributeIndex));
-            data.maxStacks =
-                GetScaled(root.defensiveScaleMaxStacksMode, data.maxStacks, (int)attrs.GetCurrent(root.defensiveScaleMaxStacksAttributeIndex));
+            data.duration = root.defensiveScaleDurationAttributeIndex > 0
+                ? GetScaled(root.defensiveScaleDurationMode, data.duration, attrs.GetCurrent(root.defensiveScaleDurationAttributeIndex))
+                : data.duration;
+
+            data.maxStacks = root.defensiveScaleMaxStacksAttributeIndex > 0
+                ? GetScaled(root.defensiveScaleMaxStacksMode, data.maxStacks, (int)attrs.GetCurrent(root.defensiveScaleMaxStacksAttributeIndex))
+                : data.maxStacks;
+
+            data.effectivity = root.defensiveEffectivityAttributeIndex > 0
+                ? GetScaled(root.defensiveEffectivityMode, data.effectivity, attrs.GetCurrent(root.defensiveEffectivityAttributeIndex))
+                : data.effectivity;
         }
 
         public AilmentRootRuntimeData Create(AilmentCreationContext ctx, int value)
         {
             return new AilmentRootRuntimeData()
             {
-                duration = GetScaled(root.durationScaleMode, root.duration, (int)ctx.attributes.GetCurrent(root.scaleDurationAttributeIndex)),
-                maxStacks = GetScaled(root.maxStacksScaleMode, root.maxStacks, (int)ctx.attributes.GetCurrent(root.scaleMaxStacksAttributeIndex)),
+                duration = root.scaleDurationAttributeIndex > 0
+                    ? GetScaled(root.durationScaleMode, root.duration, ctx.attributes.GetCurrent(root.scaleDurationAttributeIndex))
+                    : root.duration,
+
+                maxStacks = root.scaleMaxStacksAttributeIndex > 0
+                    ? GetScaled(root.maxStacksScaleMode, root.maxStacks, (int)ctx.attributes.GetCurrent(root.scaleMaxStacksAttributeIndex))
+                    : root.maxStacks,
+
+                effectivity = root.effectivityAttributeIndex > 0
+                    ? GetScaled(root.effectivityScaleMode, root.baseEffectivity, ctx.attributes.GetCurrent(root.effectivityAttributeIndex))
+                    : root.baseEffectivity,
+
                 stackGroupId = root.stackGroupId,
                 value = value,
             };
@@ -234,6 +261,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
         }
     }
 
+    [Serializable]
     public struct AilmentInfo : IEquatable<AilmentInfo>
     {
         public int stacksCount;

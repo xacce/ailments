@@ -42,7 +42,8 @@ namespace GameReady.Ailments.Runtime.Jobs
             GameDebug.Spam("Ailment", $"Has new incoming ailments", entity);
             _storedAttributes.Clear();
             GameDebug.Spam("Ailment", $"Create hash map", entity);
-            var map = new DynamicHashMap<int, AilmentInfo>(_mapped.Reinterpret<DynamicHashMap<int, AilmentInfo>.Pair>());
+            var raw = _mapped.Reinterpret<DynamicHashMap<int, AilmentInfo>.Pair>();
+            var map = new DynamicHashMap<int, AilmentInfo>(raw);
             GameDebug.Spam("Ailment", $"Create context", entity);
             var ctx = new AilmentCreatedContext() { carrier = carrier, baseValues = _storedAttributes, deltaTime = deltaTime };
             GameDebug.Spam("Ailment", $"Create attributes", entity);
@@ -64,6 +65,14 @@ namespace GameReady.Ailments.Runtime.Jobs
             }
 
             applies.Clear();
+            for (int i = 0; i < raw.Length; i++)
+            {
+                ref var element = ref raw.ElementAt(i);
+                if (element.isOccupied)
+                {
+                    element.value.duration -= deltaTime;
+                }
+            }
 
             for (int i = active.Length - 1; i >= 0; i--)
             {
@@ -90,6 +99,7 @@ namespace GameReady.Ailments.Runtime.Jobs
                             {
                                 stackGroupCount.duration = activeAilment.rootRuntimeData.duration;
                             }
+
                             map.AddOrSet(activeAilment.rootRuntimeData.stackGroupId, stackGroupCount);
                         }
 
@@ -105,7 +115,7 @@ namespace GameReady.Ailments.Runtime.Jobs
                 }
             }
 
-            if (ctx.attributesStored)
+            if (ctx.attributesStored == 1)
             {
                 var en = ctx.baseValues.GetEnumerator();
                 while (en.MoveNext())
@@ -117,7 +127,7 @@ namespace GameReady.Ailments.Runtime.Jobs
                 en.Dispose();
             }
 
-            if (ctx.dmgStored)
+            if (ctx.dmgStored == 1)
             {
                 // var outDmg = new float3x3();
                 // for (int i = 0; i < 3; i++)
