@@ -13,7 +13,7 @@ namespace Src.PackageCandidate.GameReady.Ailments.Hybrid
     public class RawDmgAilmentSo : AilmentBakedSo
     {
         [SerializeField] private AilmentBlobRootBaked root;
-        [SerializeField] private int2 dmgIndex;
+        [HelpText("Indexi inside float3x3 matrix. X - cell index, Y - row index, 0-0 is top left, 2-0 is top right")][SerializeField] private int2 dmgIndex;
         [SerializeField] private float baseValue;
         public override int id => root.stackGroupId;
         public override Ailment ailment => new RawDmgAilment { };
