@@ -6,7 +6,7 @@ using Unity.Entities;
 using UnityEngine;
 
 namespace Src.PackageCandidate.Ailments.Hybrid
-{
+{[DisallowMultipleComponent]
     public class AilmentStorageAuthoring : MonoBehaviour
     {
         [SerializeField] private AilmentBakedSo[] ailments = Array.Empty<AilmentBakedSo>();
