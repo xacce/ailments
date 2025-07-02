@@ -6,6 +6,7 @@ using Core.Runtime.LatiosHashMap.Latios;
 using GameReady.Ailments.Runtime;
 using Src.PackageCandidate.Attributer;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
@@ -49,6 +50,24 @@ namespace Src.PackageCandidate.Ailments.Runtime
         public float3x3 inputDmg;
         public int2 inputDmgIndex;
 #endif
+    }
+
+    public partial struct AilmentDatabaseSingleton : IComponentData
+    {
+        [ReadOnly] public UnsafeHashMap<int, AilmentElementRegistry> database;
+
+        public bool TryGetById(int id, out AilmentElementRegistry item)
+        {
+            return database.TryGetValue(id, out item);
+        }
+    }
+
+    [InternalBufferCapacity(0)]
+    public partial struct AilmentElementRegistry : IBufferElementData
+    {
+        public BlobAssetReference<AilmentBlob> blob;
+        public Ailment ailment;
+        public int id;
     }
 
     public partial struct AilmentRootRuntimeData
@@ -223,39 +242,46 @@ namespace Src.PackageCandidate.Ailments.Runtime
         public BlobAssetReference<AilmentBlob> blob;
         public AilmentRootRuntimeData rootRuntimeData;
         public Ailment ailment;
+
+        public void Clear()
+        {
+            rootRuntimeData.duration = 0;
+        }
     }
 
     [InternalBufferCapacity(0)]
     public partial struct AilmentElement : IBufferElementData
     {
-        public BlobAssetReference<AilmentBlob> blob;
-        public Ailment ailment;
+        // public BlobAssetReference<AilmentBlob> blob;
+        public int id;
     }
 
     public static class AilmentElementExtender
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ConstructAll<T>(this T ailments, ref AilmentCreationContext ctx, DynamicBuffer<ApplyAilment> to) where T : INativeList<AilmentElement>
+        public static void ConstructAll<T>(this T ailments, ref AilmentCreationContext ctx, AilmentDatabaseSingleton db, DynamicBuffer<ApplyAilment> to)
+            where T : INativeList<AilmentElement>
         {
             for (int i = 0; i < ailments.Length; i++)
             {
-                var ailment = ailments[i];
+                if (!db.TryGetById(ailments[i].id, out var ailment)) continue;
                 if (ailment.ailment.Validate(ref ctx, ailment.blob))
                 {
-                    to.Add(new ApplyAilment() { ailmentRuntime = ailments[i].ailment.Create(ref ctx, ailments[i].blob) });
+                    to.Add(new ApplyAilment() { ailmentRuntime = ailment.ailment.Create(ref ctx, ailment.blob) });
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ConstructAll<T>(this T ailments, ref AilmentCreationContext ctx, NativeList<ApplyAilment> to) where T : INativeList<AilmentElement>
+        public static void ConstructAll<T>(this T ailments, ref AilmentCreationContext ctx, AilmentDatabaseSingleton db, NativeList<ApplyAilment> to)
+            where T : INativeList<AilmentElement>
         {
             for (int i = 0; i < ailments.Length; i++)
             {
-                var ailment = ailments[i];
+                if (!db.TryGetById(ailments[i].id, out var ailment)) continue;
                 if (ailment.ailment.Validate(ref ctx, ailment.blob))
                 {
-                    to.Add(new ApplyAilment() { ailmentRuntime = ailments[i].ailment.Create(ref ctx, ailments[i].blob) });
+                    to.Add(new ApplyAilment() { ailmentRuntime = ailment.ailment.Create(ref ctx, ailment.blob) });
                 }
             }
         }

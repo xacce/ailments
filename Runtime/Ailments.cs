@@ -30,13 +30,13 @@ namespace Src.PackageCandidate.Ailments.Runtime
 
     public static class AilmentListExtension
     {
-        public static string[] ToStringArray(this INativeList<AilmentElement> elements, ref AilmentCreationContext ctx)
+        public static string[] ToStringArray(this INativeList<AilmentElement> elements, ref AilmentCreationContext ctx,AilmentDatabaseSingleton db)
         {
             var result = new string[elements.Length];
             for (int i = 0; i < elements.Length; i++)
             {
-                var e = elements[i];
-                result[i] = e.ailment.Description(ref ctx, e.blob);
+                if(!db.TryGetById(elements[i].id, out var ailment)) continue;
+                result[i] = ailment.ailment.Description(ref ctx, ailment.blob);
             }
 
             return result;

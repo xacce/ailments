@@ -47,7 +47,7 @@ namespace GameReady.Ailments.Runtime
         [SerializeField] LocalizedString description = new LocalizedString();
         [SerializeField] LocalizedString tooltipDescription = new LocalizedString();
         [SerializeField] string style = String.Empty;
-        [SerializeField] private Sprite icon;
+        // [SerializeField] private Sprite icon;
 
 
         [PickId(typeof(AilmentBakedSo))] public int stackGroupId;

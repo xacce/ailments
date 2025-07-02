@@ -21,8 +21,7 @@ namespace Src.PackageCandidate.Ailments.Hybrid
                 {
                     ailments.Add(new AilmentElement()
                     {
-                        ailment = ailment.ailment,
-                        blob = ailment.Bake(this)
+                        id = ailment.id,
                     });
                 }
             }
