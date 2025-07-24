@@ -3,10 +3,7 @@ using Core.Runtime.LatiosHashMap.Latios;
 using Src.PackageCandidate.Ailments.Runtime;
 using Src.PackageCandidate.LogTest;
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
-using Unity.Mathematics;
-using UnityEngine;
 
 namespace GameReady.Ailments.Runtime
 {

@@ -1,9 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
-using GameReady.Ailments.Runtime;
 using Src.PackageCandidate.Ailments.Runtime;
-using Src.PackageCandidate.GameReady.Ailments.Hybrid;
-using Src.PackageCandidate.PrefabCollection;
 using Src.PackageCandidate.PrefabCollection.Authoring;
 using Unity.Entities;
 using UnityEngine;

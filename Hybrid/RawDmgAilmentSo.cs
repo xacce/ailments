@@ -2,7 +2,6 @@
 using GameReady.Ailments.Runtime;
 using Src.PackageCandidate.Ailments.Hybrid;
 using Src.PackageCandidate.Ailments.Runtime;
-using Src.PackageCandidate.Sufferenger.Authoring;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;

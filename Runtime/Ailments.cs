@@ -13,19 +13,19 @@ namespace Src.PackageCandidate.Ailments.Runtime
     [PolymorphicStructInterface]
     public interface IAilment
     {
-        public bool Validate(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreationContext ctx, BlobAssetReference<Src.PackageCandidate.Ailments.Runtime.AilmentBlob> blob);
+        public bool Validate(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blob);
 
-        public AilmentRuntime Create(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreationContext ctx,
-            BlobAssetReference<Src.PackageCandidate.Ailments.Runtime.AilmentBlob> blob);
+        public AilmentRuntime Create(ref AilmentCreationContext ctx,
+            BlobAssetReference<AilmentBlob> blob);
 
-        public void OnFresh(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreatedContext ctx, in Src.PackageCandidate.Ailments.Runtime.AilmentRuntime rootRuntimeData);
-        public void OnTick(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreatedContext ctx, in Src.PackageCandidate.Ailments.Runtime.AilmentRuntime rootRuntimeData);
-        public void OnExpired(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreatedContext ctx, in Src.PackageCandidate.Ailments.Runtime.AilmentRuntime rootRuntimeData);
+        public void OnFresh(ref AilmentCreatedContext ctx, in AilmentRuntime rootRuntimeData);
+        public void OnTick(ref AilmentCreatedContext ctx, in AilmentRuntime rootRuntimeData);
+        public void OnExpired(ref AilmentCreatedContext ctx, in AilmentRuntime rootRuntimeData);
 
-        public string Description(ref Src.PackageCandidate.Ailments.Runtime.AilmentCreationContext ctx,
-            BlobAssetReference<Src.PackageCandidate.Ailments.Runtime.AilmentBlob> blobReference);
+        public string Description(ref AilmentCreationContext ctx,
+            BlobAssetReference<AilmentBlob> blobReference);
 
-        public string Title(BlobAssetReference<Src.PackageCandidate.Ailments.Runtime.AilmentBlob> blobReference);
+        public string Title(BlobAssetReference<AilmentBlob> blobReference);
     }
 
     public static class AilmentListExtension

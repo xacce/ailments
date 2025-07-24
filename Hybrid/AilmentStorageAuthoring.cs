@@ -1,6 +1,5 @@
 ﻿#if UNITY_EDITOR
 using System;
-using GameReady.Ailments.Runtime;
 using Src.PackageCandidate.Ailments.Runtime;
 using Unity.Entities;
 using UnityEngine;

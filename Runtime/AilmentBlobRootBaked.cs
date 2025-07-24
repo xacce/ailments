@@ -7,7 +7,6 @@ using Src.PackageCandidate.Attributer.Authoring;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Localization;
-using UnityEngine.Localization.Tables;
 using UnityEngine.Serialization;
 
 namespace GameReady.Ailments.Runtime

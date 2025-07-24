@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 using Src.PackageCandidate.Ailments.Hybrid;
 using Src.PackageCandidate.EditorHelpers;
-using Src.PackageCandidate.PrefabCollection.Authoring.So;
 using UnityEditor;
 using UnityEngine;
 

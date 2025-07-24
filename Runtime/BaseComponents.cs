@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Core.Runtime;
 using Core.Runtime.LatiosHashMap.Latios;
 using GameReady.Ailments.Runtime;
@@ -9,7 +8,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Mathematics;
-using UnityEngine;
+using Random = Unity.Mathematics.Random;
 
 namespace Src.PackageCandidate.Ailments.Runtime
 {
@@ -44,7 +43,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
 
     public partial struct AilmentCreationContext
     {
-        public Unity.Mathematics.Random rnd;
+        public Random rnd;
         [ReadOnly] public DynamicBuffer<AttributeValue> attributes;
 #if DAMAGE_MODULE
         public float3x3 inputDmg;
