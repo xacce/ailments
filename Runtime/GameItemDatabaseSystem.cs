@@ -24,7 +24,6 @@ namespace DotsItem
             _initialized = true;
             var items = SystemAPI.GetSingletonBuffer<AilmentElementRegistry>();
             var ailments = new UnsafeHashMap<int, AilmentElementRegistry>(items.Length, Allocator.Persistent);
-            var sharedData = new NativeHashMap<int, Entity>();
             for (var i = 0; i < items.Length; i++)
             {
                 var el = items[i];
