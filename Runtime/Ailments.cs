@@ -6,6 +6,7 @@ using Trove.PolymorphicStructs;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using UnityEngine;
 using UnityEngine.Localization.Settings;
 
 namespace Src.PackageCandidate.Ailments.Runtime
@@ -30,12 +31,12 @@ namespace Src.PackageCandidate.Ailments.Runtime
 
     public static class AilmentListExtension
     {
-        public static string[] ToStringArray(this INativeList<AilmentElement> elements, ref AilmentCreationContext ctx,AilmentDatabaseSingleton db)
+        public static string[] ToStringArray(this INativeList<AilmentElement> elements, ref AilmentCreationContext ctx, AilmentDatabaseSingleton db)
         {
             var result = new string[elements.Length];
             for (int i = 0; i < elements.Length; i++)
             {
-                if(!db.TryGetById(elements[i].id, out var ailment)) continue;
+                if (!db.TryGetById(elements[i].id, out var ailment)) continue;
                 result[i] = ailment.ailment.Description(ref ctx, ailment.blob);
             }
 
@@ -46,16 +47,27 @@ namespace Src.PackageCandidate.Ailments.Runtime
     [PolymorphicStruct]
     public partial struct AffectAttributesAilment : IAilment
     {
-
         public string Description(ref AilmentCreationContext ctx, BlobAssetReference<AilmentBlob> blobReference)
         {
             ref var ailmentBlob = ref blobReference.Value;
+            var runtime = Create(ref ctx, blobReference);
+            var effectivity = runtime.rootRuntimeData.effectivity;
+            Dictionary<string, float> ailmentAttributes = new Dictionary<string, float>();
+            for (int i = 0; i < ailmentBlob.polyData.attributes.list.Length; i++)
+            {
+                var value = ailmentBlob.polyData.attributes.list[i].value;
+                value *= effectivity;
+                Debug.Log($"{((ShipAttribute)ailmentBlob.polyData.attributes.list[i].index).ToString()} : {value}");
+                ailmentAttributes[((ShipAttribute)ailmentBlob.polyData.attributes.list[i].index).ToString()] = value;
+            }
+
             return LocalizationSettings.StringDatabase.GetLocalizedString(
                 ailmentBlob.root.description.table,
                 ailmentBlob.root.description.key, new List<object>()
                 {
                     Create(ref ctx, blobReference).rootRuntimeData,
-                    ailmentBlob.root.applyValidationRandomAttribute == -1 ? 100 : ctx.attributes.GetCurrent(ailmentBlob.root.applyValidationRandomAttribute)
+                    ailmentBlob.root.applyValidationRandomAttribute == -1 ? 100 : ctx.attributes.GetCurrent(ailmentBlob.root.applyValidationRandomAttribute),
+                    ailmentAttributes,
                 });
         }
 
