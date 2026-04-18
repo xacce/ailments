@@ -4,6 +4,7 @@ using Core.Runtime;
 using Core.Runtime.LatiosHashMap.Latios;
 using GameReady.Ailments.Runtime;
 using Src.PackageCandidate.Attributer;
+using StatBlobCore;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
@@ -44,7 +45,7 @@ namespace Src.PackageCandidate.Ailments.Runtime
     public partial struct AilmentCreationContext
     {
         public Random rnd;
-        [ReadOnly] public DynamicBuffer<AttributeValue> attributes;
+        [ReadOnly] public StatBlobFullArray attributes;
 #if DAMAGE_MODULE
         public float3x3 inputDmg;
         public int2 inputDmgIndex;
