@@ -192,15 +192,16 @@ namespace Src.PackageCandidate.Ailments.Runtime
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void AffectDefensive(ref AilmentRuntime runtime, StatBlobFullArray attrs)
+        public static void AffectDefensive<TDirty>(ref TDirty dirty,ref AilmentRuntime runtime, StatBlobFullArray attrs)
         {
             ref var root = ref runtime.blob.Value.root;
-            AffectDefensive(ref runtime.rootRuntimeData, ref root, attrs);
+            AffectDefensive(ref dirty,ref runtime.rootRuntimeData, ref root, attrs);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void AffectDefensive(ref AilmentRootRuntimeData data, ref Root root, StatBlobFullArray attrs)
+        public static void AffectDefensive<TDirty>(ref TDirty dirty,ref AilmentRootRuntimeData data, ref Root root, StatBlobFullArray attrs)
         {
+            
             data.duration = root.defensiveScaleDurationAttributeIndex > 0
                 ? GetScaled(root.defensiveScaleDurationMode, data.duration, attrs.GetCurrent(root.defensiveScaleDurationAttributeIndex))
                 : data.duration;
