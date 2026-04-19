@@ -1,8 +1,10 @@
 ﻿using Core.Runtime.LatiosHashMap.Latios;
+using GameAttributes.Ship;
 using Src.OneShoot;
 using Src.PackageCandidate.Ailments.Runtime;
 using Src.PackageCandidate.Attributer;
 using Src.PackageCandidate.LogTest;
+using StatBlobCore;
 using Sufferenger;
 using Unity.Burst;
 using Unity.Burst.Intrinsics;
@@ -24,13 +26,14 @@ namespace GameReady.Ailments.Runtime.Jobs
         [NativeDisableContainerSafetyRestriction]
         private NativeHashMap<int, float> _storedAttributes;
 
-        public AttributerRwContext attributerRwCtx;
         public float deltaTime;
 
         [BurstCompile]
         private void Execute(
             ref AilmentCarrier carrier,
             ref GameOneShootShortEvent evts,
+            DynamicBuffer<StatBlobValue> values,
+            ref ShipAttributeDirty dirty,
             DynamicBuffer<ActiveAilmentArrayMap> _mapped,
             DynamicBuffer<AilmentRuntime> active,
             DynamicBuffer<ApplyAilment> applies,
@@ -46,13 +49,13 @@ namespace GameReady.Ailments.Runtime.Jobs
             GameDebug.Spam("Ailment", $"Create context", entity);
             var ctx = new AilmentCreatedContext() { carrier = carrier, baseValues = _storedAttributes, deltaTime = deltaTime };
             GameDebug.Spam("Ailment", $"Create attributes", entity);
-            var attributesRw = new AttributerRw<AttributerRwContext>(attributerRwCtx, entity);
+            var attributesRw = StatBlobFullArray.FromExists(values);
             for (int i = 0; i < applies.Length; i++)
             {
                 GameDebug.Spam("Ailment", $"Resolve: {i} incoming ailment", entity);
                 var apply = applies[i];
                 GameDebug.Spam("Ailment", $"Apply defensive layers for {i} incoming ailment", entity);
-                AilmentBlob.AffectDefensive(ref apply.ailmentRuntime, attributesRw.values);
+                AilmentBlob.AffectDefensive(ref dirty, ref apply.ailmentRuntime, attributesRw);
 
                 GameDebug.Spam("Ailment", $"Trying to add to storage {i} incoming ailment", entity);
                 var result = Helper.TryAddAilment(ref ctx, apply.ailmentRuntime, ref map, ref active, entity, out int ailmentIndex);
@@ -120,7 +123,7 @@ namespace GameReady.Ailments.Runtime.Jobs
                 while (en.MoveNext())
                 {
                     var kv = en.Current;
-                    attributesRw.AddBase(kv.Key, kv.Value);
+                    attributesRw.TryAddOrigin(ref dirty, kv.Key, kv.Value);
                 }
 
                 en.Dispose();
